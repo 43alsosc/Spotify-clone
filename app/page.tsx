@@ -1,103 +1,180 @@
+import { Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const recentlyPlayed = [
+    {
+      title: "Liked Songs",
+      image: "/placeholder.svg?height=150&width=150",
+      creator: "Your Library",
+    },
+    {
+      title: "Daily Mix 1",
+      image: "/placeholder.svg?height=150&width=150",
+      creator: "Spotify",
+    },
+    {
+      title: "Discover Weekly",
+      image: "/placeholder.svg?height=150&width=150",
+      creator: "Spotify",
+    },
+    {
+      title: "Release Radar",
+      image: "/placeholder.svg?height=150&width=150",
+      creator: "Spotify",
+    },
+    {
+      title: "Chill Mix",
+      image: "/placeholder.svg?height=150&width=150",
+      creator: "Spotify",
+    },
+    {
+      title: "Rock Classics",
+      image: "/placeholder.svg?height=150&width=150",
+      creator: "Spotify",
+    },
+  ];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const madeForYou = [
+    {
+      title: "Daily Mix 1",
+      image: "/placeholder.svg?height=150&width=150",
+      description: "Kendrick Lamar, J. Cole, Drake and more",
+    },
+    {
+      title: "Daily Mix 2",
+      image: "/placeholder.svg?height=150&width=150",
+      description: "Taylor Swift, Billie Eilish, Olivia Rodrigo and more",
+    },
+    {
+      title: "Daily Mix 3",
+      image: "/placeholder.svg?height=150&width=150",
+      description: "The Weeknd, Post Malone, Doja Cat and more",
+    },
+    {
+      title: "Discover Weekly",
+      image: "/placeholder.svg?height=150&width=150",
+      description: "Your weekly mixtape of fresh music",
+    },
+    {
+      title: "Release Radar",
+      image: "/placeholder.svg?height=150&width=150",
+      description: "Catch all the latest music from artists you follow",
+    },
+  ];
+
+  return (
+    <main className="flex-1 overflow-auto bg-gradient-to-b from-[#1F1F1F] to-[#121212] p-6">
+      <div className="mb-8">
+        <h1 className="mb-6 text-2xl font-bold text-white">Good afternoon</h1>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {recentlyPlayed.map((item, i) => (
+            <div
+              key={i}
+              className="group flex items-center gap-4 rounded-md bg-[#2A2A2A] p-1 pr-4 transition-all hover:bg-[#3E3E3E]"
+            >
+              <Image
+                src={"/Placeholder-48x48.svg"}
+                alt={item.title}
+                width={80}
+                height={80}
+                className="rounded-md"
+              />
+              <span className="font-semibold text-white">{item.title}</span>
+              <div className="ml-auto opacity-0 transition-opacity group-hover:opacity-100">
+                <Button
+                  size="icon"
+                  className="h-12 w-12 rounded-full bg-[#1DB954] text-black shadow-lg hover:scale-105 hover:bg-[#1ED760]"
+                >
+                  <Play className="h-6 w-6 fill-current" />
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+
+      <div className="mb-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white">Made for You</h2>
+          <button className="text-sm font-bold text-gray-400 hover:text-white">
+            Show all
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {madeForYou.map((item, i) => (
+            <Card
+              key={i}
+              className="group relative bg-[#181818] transition-all hover:bg-[#282828]"
+            >
+              <CardContent className="p-4">
+                <div className="relative mb-4">
+                  <Image
+                    src={item.image || "/placeholder.svg"}
+                    alt={item.title}
+                    width={150}
+                    height={150}
+                    className="rounded-md shadow-lg"
+                  />
+                  <div className="absolute right-2 bottom-2 opacity-0 transition-all group-hover:bottom-4 group-hover:opacity-100">
+                    <Button
+                      size="icon"
+                      className="h-12 w-12 rounded-full bg-[#1DB954] text-black shadow-lg hover:scale-105 hover:bg-[#1ED760]"
+                    >
+                      <Play className="h-6 w-6 fill-current" />
+                    </Button>
+                  </div>
+                </div>
+                <h3 className="mb-1 font-bold text-white">{item.title}</h3>
+                <p className="line-clamp-2 text-sm text-gray-400">
+                  {item.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white">Recently Played</h2>
+          <button className="text-sm font-bold text-gray-400 hover:text-white">
+            Show all
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {recentlyPlayed.map((item, i) => (
+            <Card
+              key={i}
+              className="group relative bg-[#181818] transition-all hover:bg-[#282828]"
+            >
+              <CardContent className="p-4">
+                <div className="relative mb-4">
+                  <Image
+                    src={item.image || "/Placeholder-48x48.svg"}
+                    alt={item.title}
+                    width={150}
+                    height={150}
+                    className="rounded-md shadow-lg"
+                  />
+                  <div className="absolute right-2 bottom-2 opacity-0 transition-all group-hover:bottom-4 group-hover:opacity-100">
+                    <Button
+                      size="icon"
+                      className="h-12 w-12 rounded-full bg-[#1DB954] text-black shadow-lg hover:scale-105 hover:bg-[#1ED760]"
+                    >
+                      <Play className="h-6 w-6 fill-current" />
+                    </Button>
+                  </div>
+                </div>
+                <h3 className="mb-1 font-bold text-white">{item.title}</h3>
+                <p className="text-sm text-gray-400">By {item.creator}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }
