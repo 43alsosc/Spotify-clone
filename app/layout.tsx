@@ -1,13 +1,14 @@
 import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
-import { ResizableSidePanel } from "@/components/sidepanel";
 import { Header } from "@/components/header";
 import { MusicPlayer } from "@/components/music-player";
 import localFont from "next/font/local";
+import Providers from "@/providers/query-client-provider";
+import ResizablePanels from "@/components/resizable-panels";
 
 const circularBlack = localFont({
-  src: "./fonts/Circular-Black.ttf",
+  src: "./fonts/circular-black.ttf",
   variable: "--font-circular-black",
 });
 
@@ -23,17 +24,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${circularBlack.variable} bg-black text-gray-300 antialiased`}
-      >
-        <div className="flex h-screen flex-col">
-          <Header />
-          <div className="flex flex-1 overflow-x-hidden">
-            <ResizableSidePanel>{children}</ResizableSidePanel>
+      <Providers>
+        <body
+          className={`${circularBlack.variable} bg-black text-gray-300 antialiased`}
+        >
+          <div className="flex h-screen flex-col">
+            <Header />
+            <main className="flex-1 overflow-hidden p-4">
+              <ResizablePanels>{children}</ResizablePanels>
+            </main>
+            <MusicPlayer />
           </div>
-          <MusicPlayer />
-        </div>
-      </body>
+        </body>
+      </Providers>
     </html>
   );
 }

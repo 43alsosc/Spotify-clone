@@ -1,180 +1,253 @@
-import { Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { ChevronRight, Play } from "lucide-react";
+import { CategoryItem, Track } from "@/types/types";
+import { getRecentlyPlayedTracks } from "./actions/getRecentlyPlaced";
+import { getFeaturedPlaylists } from "./actions/getFeaturedPlaylists";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
-  const recentlyPlayed = [
-    {
-      title: "Liked Songs",
-      image: "/placeholder.svg?height=150&width=150",
-      creator: "Your Library",
-    },
-    {
-      title: "Daily Mix 1",
-      image: "/placeholder.svg?height=150&width=150",
-      creator: "Spotify",
-    },
-    {
-      title: "Discover Weekly",
-      image: "/placeholder.svg?height=150&width=150",
-      creator: "Spotify",
-    },
-    {
-      title: "Release Radar",
-      image: "/placeholder.svg?height=150&width=150",
-      creator: "Spotify",
-    },
-    {
-      title: "Chill Mix",
-      image: "/placeholder.svg?height=150&width=150",
-      creator: "Spotify",
-    },
-    {
-      title: "Rock Classics",
-      image: "/placeholder.svg?height=150&width=150",
-      creator: "Spotify",
-    },
-  ];
+  const scrollableRef = useRef<HTMLDivElement>(null);
+  const [recentTracks, setRecentTracks] = useState<Track[]>([]);
+  const [featuredItems, setFeaturedItems] = useState<CategoryItem[]>([]);
+  const [isLoadingTracks, setIsLoadingTracks] = useState(true);
+  const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
 
-  const madeForYou = [
-    {
-      title: "Daily Mix 1",
-      image: "/placeholder.svg?height=150&width=150",
-      description: "Kendrick Lamar, J. Cole, Drake and more",
-    },
-    {
-      title: "Daily Mix 2",
-      image: "/placeholder.svg?height=150&width=150",
-      description: "Taylor Swift, Billie Eilish, Olivia Rodrigo and more",
-    },
-    {
-      title: "Daily Mix 3",
-      image: "/placeholder.svg?height=150&width=150",
-      description: "The Weeknd, Post Malone, Doja Cat and more",
-    },
-    {
-      title: "Discover Weekly",
-      image: "/placeholder.svg?height=150&width=150",
-      description: "Your weekly mixtape of fresh music",
-    },
-    {
-      title: "Release Radar",
-      image: "/placeholder.svg?height=150&width=150",
-      description: "Catch all the latest music from artists you follow",
-    },
-  ];
+  // Fetch recent tracks
+  useEffect(() => {
+    const fetchRecentTracks = async () => {
+      try {
+        const tracks = await getRecentlyPlayedTracks(20);
+
+        // Remove duplicates
+        const uniqueTracks = tracks?.filter(
+          (track, index, self) =>
+            index === self.findIndex((t) => t.id === track.id),
+        );
+
+        setRecentTracks(uniqueTracks || []);
+      } catch (error) {
+        console.error("Error fetching recent tracks:", error);
+      } finally {
+        setIsLoadingTracks(false);
+      }
+    };
+
+    const fetchFeaturedItems = async () => {
+      try {
+        const items = await getFeaturedPlaylists();
+
+        // Sjekk om det er desember
+        const isDecember = new Date().getMonth() === 11;
+
+        // Sjekk om det er natt (mellom 22:00 og 06:00)
+        const currentHour = new Date().getHours();
+        const isNightTime = currentHour >= 22 || currentHour < 6;
+
+        // Filtrer først basert på tid
+        const filteredItems = (items || []).filter((item) => {
+          // Behold "God Jul" spillelisten kun i desember
+          if (item.id === "0JQ5DAqbMKFDKyRxRDLIbk") {
+            return isDecember;
+          }
+
+          // Behold "Sove" spillelisten kun om natten
+          if (item.id === "0JQ5DAqbMKFCuoRTxhYWow") {
+            return isNightTime;
+          }
+
+          return true;
+        });
+
+        // Finn "Spesielt for deg" spillelisten
+        const spesieltForDeg = filteredItems.find(
+          (item) => item.id === "0JQ5DAt0tbjZptfcdMSKl3",
+        );
+
+        // Fjern "Spesielt for deg" fra listen som skal blandes
+        const otherItems = filteredItems.filter(
+          (item) => item.id !== "0JQ5DAt0tbjZptfcdMSKl3",
+        );
+
+        // Bland de andre spillelistene
+        const shuffledItems = otherItems.sort(() => Math.random() - 0.5);
+
+        // Ta de første 7 blandede spillelistene
+        const selectedItems = shuffledItems.slice(0, 7);
+
+        // Kombiner "Spesielt for deg" med de 7 tilfeldige spillelistene
+        const finalItems = spesieltForDeg
+          ? [spesieltForDeg, ...selectedItems]
+          : selectedItems;
+
+        setFeaturedItems(finalItems);
+      } catch (error) {
+        console.error("Error fetching featured items:", error);
+      } finally {
+        setIsLoadingFeatured(false);
+      }
+    };
+
+    fetchRecentTracks();
+    fetchFeaturedItems();
+  }, []);
+
+  // Check if tracks can be scrolled and update fade effect
+  useEffect(() => {
+    const checkScroll = () => {
+      if (scrollableRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollableRef.current;
+        const element = scrollableRef.current;
+        if (scrollLeft <= 0) {
+          // At the start - only fade right
+          element.style.maskImage =
+            "linear-gradient(to right, black 95%, transparent)";
+        } else if (scrollLeft >= scrollWidth - clientWidth - 10) {
+          // At the end - only fade left
+          element.style.maskImage =
+            "linear-gradient(to right, transparent, black 5%)";
+        } else {
+          // In the middle - fade both sides
+          element.style.maskImage =
+            "linear-gradient(to right, transparent, black 5%, black 95%, transparent)";
+        }
+      }
+    };
+
+    checkScroll();
+
+    const scrollableElement = scrollableRef.current;
+    if (scrollableElement) {
+      scrollableElement.addEventListener("scroll", checkScroll);
+      window.addEventListener("resize", checkScroll);
+    }
+
+    return () => {
+      if (scrollableElement) {
+        scrollableElement.removeEventListener("scroll", checkScroll);
+        window.removeEventListener("resize", checkScroll);
+      }
+    };
+  }, []);
 
   return (
-    <main className="flex-1 overflow-auto bg-gradient-to-b from-[#1F1F1F] to-[#121212] p-6">
-      <div className="mb-8">
-        <h1 className="mb-6 text-2xl font-bold text-white">Good afternoon</h1>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {recentlyPlayed.map((item, i) => (
-            <div
-              key={i}
-              className="group flex items-center gap-4 rounded-md bg-[#2A2A2A] p-1 pr-4 transition-all hover:bg-[#3E3E3E]"
-            >
-              <Image
-                src={"/Placeholder-48x48.svg"}
-                alt={item.title}
-                width={80}
-                height={80}
-                className="rounded-md"
-              />
-              <span className="font-semibold text-white">{item.title}</span>
-              <div className="ml-auto opacity-0 transition-opacity group-hover:opacity-100">
-                <Button
-                  size="icon"
-                  className="h-12 w-12 rounded-full bg-[#1DB954] text-black shadow-lg hover:scale-105 hover:bg-[#1ED760]"
-                >
-                  <Play className="h-6 w-6 fill-current" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mb-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Made for You</h2>
-          <button className="text-sm font-bold text-gray-400 hover:text-white">
-            Show all
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {madeForYou.map((item, i) => (
-            <Card
-              key={i}
-              className="group relative bg-[#181818] transition-all hover:bg-[#282828]"
-            >
-              <CardContent className="p-4">
-                <div className="relative mb-4">
-                  <Image
-                    src={item.image || "/placeholder.svg"}
-                    alt={item.title}
-                    width={150}
-                    height={150}
-                    className="rounded-md shadow-lg"
-                  />
-                  <div className="absolute right-2 bottom-2 opacity-0 transition-all group-hover:bottom-4 group-hover:opacity-100">
-                    <Button
-                      size="icon"
-                      className="h-12 w-12 rounded-full bg-[#1DB954] text-black shadow-lg hover:scale-105 hover:bg-[#1ED760]"
-                    >
-                      <Play className="h-6 w-6 fill-current" />
-                    </Button>
+    <div className="flex flex-col gap-8">
+      {/* Featured Grid */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {isLoadingFeatured
+          ? // Skeleton loading state for featured items
+            Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="h-20 overflow-hidden rounded-lg">
+                <div className="flex overflow-hidden rounded-[0.5rem]">
+                  <Skeleton className="h-20 w-20 rounded-l-[0.5rem]" />
+                  <div className="flex w-full items-center bg-[#302F2F] p-4">
+                    <Skeleton className="h-4 w-32" />
                   </div>
                 </div>
-                <h3 className="mb-1 font-bold text-white">{item.title}</h3>
-                <p className="line-clamp-2 text-sm text-gray-400">
-                  {item.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </div>
+            ))
+          : // Actual featured items
+            featuredItems.map((item) => (
+              <div
+                key={item.id}
+                className="group relative h-20 cursor-pointer overflow-hidden rounded-lg"
+              >
+                <div className="flex overflow-hidden rounded-[0.5rem]">
+                  <div className="relative aspect-square h-20">
+                    <Image
+                      src={item.icons[0].url || "/placeholder.svg"}
+                      alt={item.name}
+                      fill
+                      sizes="100px"
+                      className="aspect-square rounded-l-[0.5rem]"
+                    />
+                  </div>
+                  <div className="flex w-full items-center bg-[#302F2F] p-4">
+                    <h3 className="font-bold text-white">{item.name}</h3>
+                  </div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-end bg-black/20 pr-4 opacity-0 transition-opacity group-hover:opacity-100">
+                  <Button
+                    variant="default"
+                    className="aspect-square h-2/3 cursor-pointer rounded-full bg-[#1ED760] transition-all duration-300 hover:scale-105 hover:bg-[#1ED760]"
+                  >
+                    <Play fill="black" className="size-6 text-black" />
+                  </Button>
+                </div>
+              </div>
+            ))}
       </div>
 
-      <div className="mb-8">
+      {/* Recent Tracks */}
+      <section className="mt-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Recently Played</h2>
-          <button className="text-sm font-bold text-gray-400 hover:text-white">
-            Show all
+          <button className="flex items-center text-sm text-zinc-400 transition-colors hover:text-white">
+            View all
+            <ChevronRight className="ml-1 h-4 w-4" />
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {recentlyPlayed.map((item, i) => (
-            <Card
-              key={i}
-              className="group relative bg-[#181818] transition-all hover:bg-[#282828]"
-            >
-              <CardContent className="p-4">
-                <div className="relative mb-4">
-                  <Image
-                    src={item.image || "/Placeholder-48x48.svg"}
-                    alt={item.title}
-                    width={150}
-                    height={150}
-                    className="rounded-md shadow-lg"
-                  />
-                  <div className="absolute right-2 bottom-2 opacity-0 transition-all group-hover:bottom-4 group-hover:opacity-100">
-                    <Button
-                      size="icon"
-                      className="h-12 w-12 rounded-full bg-[#1DB954] text-black shadow-lg hover:scale-105 hover:bg-[#1ED760]"
-                    >
-                      <Play className="h-6 w-6 fill-current" />
-                    </Button>
-                  </div>
+
+        <div className="relative">
+          <div
+            ref={scrollableRef}
+            className="scrollbar-hide flex gap-4 overflow-x-auto pb-4"
+          >
+            {/* Skeleton loading state for tracks */}
+            {isLoadingTracks ? (
+              Array.from({ length: 10 }).map((_, index) => (
+                <div key={index} className="group w-[150px] flex-shrink-0">
+                  <Skeleton className="mb-2 aspect-square w-full rounded-md" />
+                  <Skeleton className="mb-1 h-4 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
                 </div>
-                <h3 className="mb-1 font-bold text-white">{item.title}</h3>
-                <p className="text-sm text-gray-400">By {item.creator}</p>
-              </CardContent>
-            </Card>
-          ))}
+              ))
+            ) : recentTracks.length > 0 ? (
+              // Actual tracks
+              recentTracks.map((track, index) => (
+                <div key={index} className="group w-[150px] flex-shrink-0">
+                  <div className="relative mb-2 aspect-square overflow-hidden rounded-[0.5rem] p-2 hover:bg-zinc-800/50">
+                    <Image
+                      src={track.album.images[0].url || "/placeholder.svg"}
+                      alt={track.name}
+                      fill
+                      sizes="150px"
+                      className="rounded-[0.5rem] object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-end justify-end rounded-md bg-zinc-800/50 p-2 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                      <Button
+                        variant="ghost"
+                        className="aspect-square h-12 translate-y-full transform rounded-full bg-[#1ED760] transition-all duration-200 group-hover:translate-y-0 hover:scale-105 hover:bg-[#1ED760]"
+                      >
+                        <Play fill="black" className="size-6 text-black" />
+                      </Button>
+                    </div>
+                  </div>
+                  <h3 className="truncate text-sm font-medium text-white">
+                    {track.name}
+                  </h3>
+                  <p className="truncate text-xs text-zinc-400">
+                    {track.artists.map((artist, i) => (
+                      <span key={artist.id}>
+                        {i > 0 && ", "}
+                        {artist.name}
+                      </span>
+                    ))}
+                  </p>
+                </div>
+              ))
+            ) : (
+              // Fallback for no tracks
+              <div className="w-full py-8 text-center text-zinc-400">
+                No recently played tracks found.
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </main>
+      </section>
+    </div>
   );
 }
