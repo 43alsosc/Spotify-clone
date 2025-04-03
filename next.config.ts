@@ -14,10 +14,7 @@ const nextConfig: NextConfig = {
         hostname: "image-cdn-ak.spotifycdn.com",
       },
       {
-        hostname: "i.scdn.co",
-      },
-      {
-        hostname: "image-cdn-fa.spotifycdn.com",
+        hostname: "*.scdn.co",
       },
     ],
   },
