@@ -36,7 +36,7 @@ export interface Track {
   preview_url: string;
 }
 
-export interface Playlist {
+export type Playlist = {
   collaborative: boolean;
   description: string;
   external_urls: {
@@ -51,14 +51,14 @@ export interface Playlist {
       spotify: string;
     };
     followers: {
-      href: string;
+      href: string | null;
       total: number;
     };
     href: string;
     id: string;
     type: string;
     uri: string;
-    display_name: string;
+    display_name: string | null;
   };
   public: boolean;
   snapshot_id: string;
@@ -67,7 +67,7 @@ export interface Playlist {
     total: number;
   };
   uri: string;
-}
+};
 
 export interface CategoryItem {
   href: string;
