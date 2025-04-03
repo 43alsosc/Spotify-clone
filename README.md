@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Credit to ankitk26 for Auth, clean copy paste. [`Next-Spotify-v2`](https://github.com/ankitk26/Next-Spotify-v2.git)
 
 ## ToDo
