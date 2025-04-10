@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronRight, Play } from "lucide-react";
 import { CategoryItem, Track } from "@/types/types";
-import { getRecentlyPlayedTracks } from "./actions/getRecentlyPlaced";
-import { getFeaturedPlaylists } from "./actions/getFeaturedPlaylists";
+import { getRecentlyPlayedTracks } from "../actions/getRecentlyPlaced";
+import { getFeaturedPlaylists } from "../actions/getFeaturedPlaylists";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
