@@ -2,7 +2,7 @@
 
 ## ToDo
 
-- [ ] Fiks problem hvor det fetches nye playlists når sidebar kollapser og tilbake
+- [x] Fiks problem hvor det fetches nye playlists når sidebar kollapser og tilbake
 - [ ] Legg til flere rader på hjemmesiden
 - [ ] Lag spilleliste side
 - [ ] Lag artist side

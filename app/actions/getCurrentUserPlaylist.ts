@@ -17,7 +17,5 @@ export const getCurrentUserPlaylist = async () => {
     items: Playlist[];
   }>(`/me/playlists`);
 
-  console.log("Playlists fetched", data);
-
   return data?.items;
 };
