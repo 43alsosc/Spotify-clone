@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Music, User } from "lucide-react";
+import { Play, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Playlist } from "@/types/types";
 
@@ -16,8 +16,8 @@ export default function MediaItem({
 }: MediaItemProps) {
   if (isCollapsed) {
     return (
-      <div className="group relative aspect-square size-16 cursor-pointer overflow-hidden rounded-[0.5rem] bg-[#121212] p-2 transition-all hover:bg-[#242424]">
-        <div className="relative h-full w-full overflow-hidden rounded-[0.4rem]">
+      <div className="group relative aspect-square size-16 cursor-pointer overflow-hidden rounded-[0.5rem] bg-[#121212] p-2 transition-all hover:bg-[#2F2F2F]">
+        <div className="relative h-full w-full overflow-hidden rounded-[0.5rem]">
           <Image
             src={
               item.images && item.images.length > 0
@@ -27,8 +27,20 @@ export default function MediaItem({
             alt={item.name}
             fill
             sizes="5rem"
-            className="object-cover"
+            className="rounded-[0.5rem] object-cover"
           />
+        </div>
+      </div>
+    );
+  }
+
+  // Compact view - only title and type
+  if (viewMode === "compact") {
+    return (
+      <div className="group cursor-pointer rounded-[0.5rem] px-2 py-1 hover:bg-zinc-700/50">
+        <div className="flex items-center gap-2">
+          <h3 className="truncate font-medium text-white">{item.name}</h3>
+          <span className="text-xs text-zinc-400">Playlist</span>
         </div>
       </div>
     );
@@ -37,17 +49,17 @@ export default function MediaItem({
   return (
     <div
       className={cn(
-        "group flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-zinc-700/50",
-        viewMode === "compact" && "py-1",
+        "group cursor-pointer rounded-[1rem] p-2 transition-colors hover:bg-zinc-700/50",
+        viewMode === "list" &&
+          "line-clamp-1 flex w-full min-w-0 items-center gap-3",
         viewMode === "grid" && "flex-col items-start",
       )}
     >
       <div
         className={cn(
           "relative aspect-square overflow-hidden",
-          viewMode === "compact" && "h-10 w-10",
-          viewMode === "grid" && "w-full max-w-[120px]",
-          viewMode === "list" && "h-12 w-12",
+          viewMode === "list" && "h-12 w-12 flex-shrink-0",
+          viewMode === "grid" && "w-full",
           "rounded-md",
         )}
       >
@@ -59,36 +71,41 @@ export default function MediaItem({
           }
           alt={item.name}
           fill
-          sizes="5vw"
-          className="object-cover"
+          sizes={viewMode === "grid" ? "(max-width: 768px) 50vw, 33vw" : "5vw"}
+          className="aspect-square rounded-[0.5rem] object-cover"
         />
-        <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
-          <button className="bg-primary text-primary-foreground scale-0 transform rounded-full p-2 transition-transform group-hover:scale-100">
-            <Music className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      <div
-        className={cn(
-          "flex min-w-0 flex-col",
-          viewMode === "grid" && "w-full pt-2",
+        {viewMode !== "grid" && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+            <button className="text-primary-foreground scale-0 transform rounded-full p-2 transition-transform group-hover:scale-100">
+              <Play className="size-5 text-white" fill="white" />
+            </button>
+          </div>
         )}
-      >
-        <h3 className="truncate font-medium text-white">{item.name}</h3>
-        <div className="flex items-center text-sm text-zinc-400">
-          <span>{item.public ? "Public" : "Private"}</span>
-          <span className="mx-1">•</span>
-          <span className="flex items-center gap-1 truncate">
-            <User className="h-3 w-3" />
-            {item.owner.display_name ?? "Unknown"}
-          </span>
-        </div>
       </div>
 
-      <div className="ml-auto text-sm text-zinc-500">
-        {item.tracks.total} songs
-      </div>
+      {viewMode !== "grid" && (
+        <div className={cn("flex min-w-0 flex-1 flex-col overflow-hidden")}>
+          <>
+            <h3 className="truncate font-medium text-white">{item.name}</h3>
+            <div className="flex items-center text-sm text-zinc-400">
+              <span className="truncate">
+                {item.public ? "Public" : "Private"}
+              </span>
+              <span className="mx-1 flex-shrink-0">•</span>
+              <span className="flex items-center gap-1 truncate">
+                <User className="h-3 w-3 flex-shrink-0" />
+                {item.owner.display_name ?? "Unknown"}
+              </span>
+            </div>
+          </>
+        </div>
+      )}
+
+      {viewMode !== "grid" && (
+        <div className="ml-auto flex-shrink-0 text-sm text-zinc-500">
+          {item.tracks.total} songs
+        </div>
+      )}
     </div>
   );
 }

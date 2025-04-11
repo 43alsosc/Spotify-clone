@@ -38,8 +38,11 @@ export default function CollapsedSidebar({
         </svg>
       </button>
 
-      <Button variant={"default"} className="size-8 rounded-full bg-[#1F1F1F]">
-        <Plus className="h-4 w-4 text-white" />
+      <Button
+        variant={"default"}
+        className="size-8 rounded-full bg-[#1F1F1F] text-[#B3B3B3] hover:bg-[#2F2F2F] hover:text-white"
+      >
+        <Plus className="h-4 w-4 text-current" />
       </Button>
 
       <div className="grid grid-cols-1 overflow-y-auto [scrollbar-width:none]">

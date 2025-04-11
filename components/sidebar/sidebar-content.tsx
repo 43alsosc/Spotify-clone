@@ -11,23 +11,25 @@ import { Playlist } from "@/types/types";
 
 interface SidebarContentProps {
   isCollapsed: boolean;
-  dragProgress: number;
   leftPanelWidth: number;
   data: Playlist[];
   isLoading: boolean;
+  isLeftPanelMaximized: boolean;
   expandPanel: () => void;
   collapsePanel: () => void;
+  minimizePanel: () => void;
   toggleCollapsed: () => void;
 }
 
 export default function SidebarContent({
   isCollapsed,
-  dragProgress,
   leftPanelWidth,
   data,
   isLoading,
+  isLeftPanelMaximized,
   expandPanel,
   collapsePanel,
+  minimizePanel,
   toggleCollapsed,
 }: SidebarContentProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -48,8 +50,7 @@ export default function SidebarContent({
   return (
     <div
       className={cn(
-        "flex flex-col overflow-hidden rounded-[1rem] bg-zinc-800",
-        dragProgress > 0 && "opacity-90", // Visual feedback during collapse drag
+        "flex flex-col overflow-hidden rounded-[1rem] bg-[#121212]",
       )}
       style={{ width: `${leftPanelWidth}%` }}
     >
@@ -57,9 +58,10 @@ export default function SidebarContent({
       <div className="flex flex-col border-b border-zinc-700 p-4">
         {/* Header with controls */}
         <SidebarHeader
+          isLeftPanelMaximized={isLeftPanelMaximized}
           expandPanel={expandPanel}
           collapsePanel={collapsePanel}
-          dragProgress={dragProgress}
+          minimizePanel={minimizePanel}
         />
 
         {/* Filters with scroll buttons */}
@@ -69,7 +71,7 @@ export default function SidebarContent({
       {/* Scrollable content section */}
       <div className="flex-1 overflow-y-auto">
         {/* Search and sort controls */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-700 bg-zinc-800 p-4">
+        <div className="bg-bg-[#121212] flex items-center justify-between p-4">
           <div className="flex items-center">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -168,7 +170,12 @@ export default function SidebarContent({
         </div>
 
         {/* Media items list */}
-        <MediaItemsList viewMode={viewMode} data={data} isLoading={isLoading} />
+        <MediaItemsList
+          viewMode={viewMode}
+          data={data}
+          isLoading={isLoading}
+          leftPanelWidth={leftPanelWidth}
+        />
       </div>
     </div>
   );

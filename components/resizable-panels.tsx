@@ -18,7 +18,7 @@ export default function ResizablePanels({
   const [isDragging, setIsDragging] = useState(false);
   const [leftPanelWidth, setLeftPanelWidth] = useState(25); // percentage
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [dragProgress, setDragProgress] = useState(0); // Track progress towards collapse
+  const [isLeftPanelMaximized, setIsLeftPanelMaximized] = useState(false);
 
   // Panel width constants
   const MIN_WIDTH = 15;
@@ -33,7 +33,6 @@ export default function ResizablePanels({
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
-    setDragProgress(0); // Reset drag progress when starting a new drag
   }, []);
 
   // Handle the dragging motion
@@ -41,6 +40,7 @@ export default function ResizablePanels({
     (e: MouseEvent) => {
       if (!isDragging || !containerRef.current) return;
 
+      // Get the container element and its bounding client rectangle
       const container = containerRef.current;
       const containerRect = container.getBoundingClientRect();
       const containerWidth = containerRect.width;
@@ -49,11 +49,16 @@ export default function ResizablePanels({
       const newLeftPanelWidth =
         ((e.clientX - containerRect.left) / containerWidth) * 100;
 
-      // If we're expanding from collapsed state
+      // Update isLeftPanelMaximized based on the new width
+      if (newLeftPanelWidth >= MAX_WIDTH) {
+        setIsLeftPanelMaximized(true);
+      } else {
+        setIsLeftPanelMaximized(false);
+      }
+
       if (isCollapsed && newLeftPanelWidth > COLLAPSE_THRESHOLD) {
         setIsCollapsed(false);
         setLeftPanelWidth(MIN_WIDTH);
-        setDragProgress(0);
         return;
       }
 
@@ -65,7 +70,6 @@ export default function ResizablePanels({
         // Calculate drag progress towards collapse (0 to 1)
         const dragDistance = COLLAPSE_THRESHOLD - newLeftPanelWidth;
         const progress = Math.min(dragDistance / COLLAPSE_DRAG_DISTANCE, 1);
-        setDragProgress(progress);
 
         // If we've dragged far enough, collapse the panel
         if (progress >= 1) {
@@ -83,7 +87,6 @@ export default function ResizablePanels({
           MAX_WIDTH,
         );
         setLeftPanelWidth(constrainedWidth);
-        setDragProgress(0); // Reset progress when not at minimum width
       }
     },
     [isDragging, isCollapsed, COLLAPSE_THRESHOLD],
@@ -92,7 +95,6 @@ export default function ResizablePanels({
   // Handle the end of dragging
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-    setDragProgress(0); // Reset drag progress when ending drag
   }, []);
 
   // Add and remove event listeners
@@ -109,30 +111,36 @@ export default function ResizablePanels({
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   // Expand panel to maximum
-  const expandPanel = () => {
+  const expandPanel = useCallback(() => {
     setIsCollapsed(false);
     setLeftPanelWidth(MAX_WIDTH);
-    setDragProgress(0);
-  };
+    setIsLeftPanelMaximized(true);
+  }, []);
 
   // Collapse panel to minimum
-  const collapsePanel = () => {
+  const collapsePanel = useCallback(() => {
     setIsCollapsed(true);
     setLeftPanelWidth(COLLAPSED_WIDTH);
-    setDragProgress(0);
-  };
+    setIsLeftPanelMaximized(false);
+  }, []);
 
   // Toggle collapsed state
-  const toggleCollapsed = () => {
+  const toggleCollapsed = useCallback(() => {
     if (isCollapsed) {
       setIsCollapsed(false);
       setLeftPanelWidth(MIN_WIDTH);
+      setIsLeftPanelMaximized(false);
     } else {
       setIsCollapsed(true);
       setLeftPanelWidth(COLLAPSED_WIDTH);
+      setIsLeftPanelMaximized(false);
     }
-    setDragProgress(0);
-  };
+  }, [isCollapsed]);
+
+  const minimizePanel = useCallback(() => {
+    setIsLeftPanelMaximized(false);
+    setLeftPanelWidth(MIN_WIDTH);
+  }, []);
 
   const { data, error, isLoading } = useSWR<Playlist[]>(
     "/api/user-playlists",
@@ -154,12 +162,13 @@ export default function ResizablePanels({
         {/* Left Panel */}
         <SidebarContent
           isCollapsed={isCollapsed}
-          dragProgress={dragProgress}
           leftPanelWidth={leftPanelWidth}
           data={data}
           isLoading={isLoading}
+          isLeftPanelMaximized={isLeftPanelMaximized}
           expandPanel={expandPanel}
           collapsePanel={collapsePanel}
+          minimizePanel={minimizePanel}
           toggleCollapsed={toggleCollapsed}
         />
 
@@ -168,7 +177,6 @@ export default function ResizablePanels({
           className={cn(
             "flex w-2 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-zinc-600",
             isDragging && "bg-zinc-600",
-            dragProgress > 0 && "bg-zinc-500", // Visual feedback during collapse drag
           )}
           onMouseDown={handleMouseDown}
           role="separator"
@@ -191,12 +199,7 @@ export default function ResizablePanels({
             }
           }}
         >
-          <div
-            className={cn(
-              "h-8 w-0.5 rounded-full",
-              dragProgress > 0 ? "bg-zinc-400" : "bg-zinc-600",
-            )}
-          ></div>
+          <div className={cn("h-8 w-0.5 rounded-full")}></div>
         </div>
 
         {/* Right Panel - Content */}
