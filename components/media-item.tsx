@@ -5,7 +5,7 @@ import { Playlist } from "@/types/types";
 
 interface MediaItemProps {
   item: Playlist;
-  viewMode: string;
+  viewMode?: "compact" | "grid" | "list";
   isCollapsed?: boolean;
 }
 
@@ -16,16 +16,20 @@ export default function MediaItem({
 }: MediaItemProps) {
   if (isCollapsed) {
     return (
-      <div
-        className="relative mb-2 h-10 w-10 cursor-pointer overflow-hidden rounded-md transition-opacity hover:opacity-80"
-        title={item.name}
-      >
-        <Image
-          src={item.images[0].url}
-          alt={item.name}
-          fill
-          className="object-cover"
-        />
+      <div className="group relative aspect-square size-16 cursor-pointer overflow-hidden rounded-[0.5rem] bg-[#121212] p-2 transition-all hover:bg-[#242424]">
+        <div className="relative h-full w-full overflow-hidden rounded-[0.4rem]">
+          <Image
+            src={
+              item.images && item.images.length > 0
+                ? (item.images[0].url ?? item.images[1]?.url)
+                : "/Placeholder-48x48.svg"
+            }
+            alt={item.name}
+            fill
+            sizes="5rem"
+            className="object-cover"
+          />
+        </div>
       </div>
     );
   }

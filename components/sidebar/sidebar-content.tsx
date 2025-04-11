@@ -7,11 +7,14 @@ import FiltersSection from "./filters-section";
 import MediaItemsList from "./media-items-list";
 import CollapsedSidebar from "./collapsed-sidebar";
 import SidebarHeader from "./sidebar-header";
+import { Playlist } from "@/types/types";
 
 interface SidebarContentProps {
   isCollapsed: boolean;
   dragProgress: number;
   leftPanelWidth: number;
+  data: Playlist[];
+  isLoading: boolean;
   expandPanel: () => void;
   collapsePanel: () => void;
   toggleCollapsed: () => void;
@@ -21,18 +24,22 @@ export default function SidebarContent({
   isCollapsed,
   dragProgress,
   leftPanelWidth,
+  data,
+  isLoading,
   expandPanel,
   collapsePanel,
   toggleCollapsed,
 }: SidebarContentProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Recent");
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState<"compact" | "grid" | "list">("grid");
 
   if (isCollapsed) {
     return (
       <CollapsedSidebar
         leftPanelWidth={leftPanelWidth}
+        data={data}
+        isLoading={isLoading}
         toggleCollapsed={toggleCollapsed}
       />
     );
@@ -148,7 +155,9 @@ export default function SidebarContent({
                       "block w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-600 hover:text-white",
                       viewMode === option && "bg-zinc-600 text-white",
                     )}
-                    onClick={() => setViewMode(option)}
+                    onClick={() =>
+                      setViewMode(option as "compact" | "grid" | "list")
+                    }
                   >
                     {option.charAt(0).toUpperCase() + option.slice(1)}
                   </button>
@@ -159,7 +168,7 @@ export default function SidebarContent({
         </div>
 
         {/* Media items list */}
-        <MediaItemsList viewMode={viewMode} />
+        <MediaItemsList viewMode={viewMode} data={data} isLoading={isLoading} />
       </div>
     </div>
   );

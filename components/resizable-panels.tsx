@@ -4,6 +4,10 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import SidebarContent from "./sidebar/sidebar-content";
+import useSWR from "swr";
+import { Playlist } from "@/types/types";
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function ResizablePanels({
   children,
@@ -19,7 +23,7 @@ export default function ResizablePanels({
   // Panel width constants
   const MIN_WIDTH = 15;
   const MAX_WIDTH = 40;
-  const COLLAPSED_WIDTH = 6;
+  const COLLAPSED_WIDTH = 5;
 
   // Collapse behavior constants
   const COLLAPSE_THRESHOLD = MIN_WIDTH; // Start tracking collapse progress at minimum width
@@ -130,61 +134,76 @@ export default function ResizablePanels({
     setDragProgress(0);
   };
 
-  return (
-    <div
-      ref={containerRef}
-      className="flex h-[calc(100vh-8rem)] w-full overflow-hidden"
-    >
-      {/* Left Panel */}
-      <SidebarContent
-        isCollapsed={isCollapsed}
-        dragProgress={dragProgress}
-        leftPanelWidth={leftPanelWidth}
-        expandPanel={expandPanel}
-        collapsePanel={collapsePanel}
-        toggleCollapsed={toggleCollapsed}
-      />
+  const { data, error, isLoading } = useSWR<Playlist[]>(
+    "/api/user-playlists",
+    fetcher,
+  );
 
-      {/* Resizer */}
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  if (!data && isLoading === false) {
+    return <div>No user playlists found</div>;
+  } else if (data && isLoading === false) {
+    return (
       <div
-        className={cn(
-          "flex w-2 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-zinc-600",
-          isDragging && "bg-zinc-600",
-          dragProgress > 0 && "bg-zinc-500", // Visual feedback during collapse drag
-        )}
-        onMouseDown={handleMouseDown}
-        role="separator"
-        aria-orientation="vertical"
-        aria-valuenow={leftPanelWidth}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowLeft") {
-            if (isCollapsed) {
-              toggleCollapsed();
-            } else if (leftPanelWidth > MIN_WIDTH) {
-              setLeftPanelWidth((prev) => Math.max(prev - 1, MIN_WIDTH));
-            }
-          } else if (e.key === "ArrowRight") {
-            if (isCollapsed) {
-              toggleCollapsed();
-            } else {
-              setLeftPanelWidth((prev) => Math.min(prev + 1, MAX_WIDTH));
-            }
-          }
-        }}
+        ref={containerRef}
+        className="flex h-[calc(100vh-8rem)] w-full overflow-hidden"
       >
+        {/* Left Panel */}
+        <SidebarContent
+          isCollapsed={isCollapsed}
+          dragProgress={dragProgress}
+          leftPanelWidth={leftPanelWidth}
+          data={data}
+          isLoading={isLoading}
+          expandPanel={expandPanel}
+          collapsePanel={collapsePanel}
+          toggleCollapsed={toggleCollapsed}
+        />
+
+        {/* Resizer */}
         <div
           className={cn(
-            "h-8 w-0.5 rounded-full",
-            dragProgress > 0 ? "bg-zinc-400" : "bg-zinc-600",
+            "flex w-2 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-zinc-600",
+            isDragging && "bg-zinc-600",
+            dragProgress > 0 && "bg-zinc-500", // Visual feedback during collapse drag
           )}
-        ></div>
-      </div>
+          onMouseDown={handleMouseDown}
+          role="separator"
+          aria-orientation="vertical"
+          aria-valuenow={leftPanelWidth}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowLeft") {
+              if (isCollapsed) {
+                toggleCollapsed();
+              } else if (leftPanelWidth > MIN_WIDTH) {
+                setLeftPanelWidth((prev) => Math.max(prev - 1, MIN_WIDTH));
+              }
+            } else if (e.key === "ArrowRight") {
+              if (isCollapsed) {
+                toggleCollapsed();
+              } else {
+                setLeftPanelWidth((prev) => Math.min(prev + 1, MAX_WIDTH));
+              }
+            }
+          }}
+        >
+          <div
+            className={cn(
+              "h-8 w-0.5 rounded-full",
+              dragProgress > 0 ? "bg-zinc-400" : "bg-zinc-600",
+            )}
+          ></div>
+        </div>
 
-      {/* Right Panel - Content */}
-      <div className="flex-1 overflow-auto rounded-[1rem] bg-zinc-900 p-6">
-        {children}
+        {/* Right Panel - Content */}
+        <div className="flex-1 overflow-auto rounded-[1rem] bg-zinc-900 p-6">
+          {children}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
