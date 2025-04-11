@@ -3,6 +3,7 @@
 ## ToDo
 
 - [x] Fiks problem hvor det fetches nye playlists når sidebar kollapser og tilbake
+- [ ] Fiks scrollbar problem (universal problem på helle appen)
 - [ ] Legg til flere rader på hjemmesiden
 - [ ] Lag spilleliste side
 - [ ] Lag artist side
