@@ -5,7 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import SidebarContent from "./sidebar/sidebar-content";
 import useSWR from "swr";
-import { Playlist } from "@/types/types";
+import { GetUsersPlaylists } from "@/types/types";
+import { z } from "zod";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -142,10 +143,12 @@ export default function ResizablePanels({
     setLeftPanelWidth(MIN_WIDTH);
   }, []);
 
-  const { data, error, isLoading } = useSWR<Playlist[]>(
+  const { data, error, isLoading } = useSWR<z.infer<typeof GetUsersPlaylists>>(
     "/api/user-playlists",
     fetcher,
   );
+
+  const userPlaylistsData = data?.items;
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -163,7 +166,7 @@ export default function ResizablePanels({
         <SidebarContent
           isCollapsed={isCollapsed}
           leftPanelWidth={leftPanelWidth}
-          data={data}
+          data={userPlaylistsData}
           isLoading={isLoading}
           isLeftPanelMaximized={isLeftPanelMaximized}
           expandPanel={expandPanel}
@@ -203,7 +206,7 @@ export default function ResizablePanels({
         </div>
 
         {/* Right Panel - Content */}
-        <div className="flex-1 overflow-auto rounded-[1rem] bg-zinc-900 p-6">
+        <div className="flex-1 overflow-auto rounded-[1rem] bg-[#121212] p-6">
           {children}
         </div>
       </div>

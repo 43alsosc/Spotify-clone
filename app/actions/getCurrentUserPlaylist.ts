@@ -2,8 +2,9 @@
 
 import { auth } from "@/lib/auth";
 import { getRequestWrapper } from "@/lib/get-request-wrapper";
-import { Playlist } from "@/types/types";
+import { GetUsersPlaylists } from "@/types/types";
 import { headers } from "next/headers";
+import { z } from "zod";
 
 export const getCurrentUserPlaylist = async () => {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -11,11 +12,29 @@ export const getCurrentUserPlaylist = async () => {
     throw new Error("Invalid request");
   }
 
-  console.log("Fetching users playlists");
+  const data =
+    await getRequestWrapper<z.infer<typeof GetUsersPlaylists>>(`/me/playlists`);
 
-  const data = await getRequestWrapper<{
-    items: Playlist[];
-  }>(`/me/playlists`);
+  if (!data) {
+    return null;
+  }
 
-  return data?.items;
+  if (data.total > data.limit) {
+    const nextPage = data.next;
+
+    const nextData = await getRequestWrapper<z.infer<typeof GetUsersPlaylists>>(
+      nextPage!,
+    );
+
+    if (!nextData) {
+      return data;
+    }
+
+    return {
+      ...data,
+      items: [...data.items, ...nextData.items],
+    };
+  }
+
+  return data;
 };

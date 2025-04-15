@@ -2,8 +2,9 @@
 
 import { auth } from "@/lib/auth";
 import { getRequestWrapper } from "@/lib/get-request-wrapper";
-import { Track } from "@/types/types";
+import { GetRecentlyPlayed } from "@/types/types";
 import { headers } from "next/headers";
+import { z } from "zod";
 
 export const getRecentlyPlayedTracks = async (limit: number = 20) => {
   const session = await auth.api.getSession({
@@ -13,9 +14,9 @@ export const getRecentlyPlayedTracks = async (limit: number = 20) => {
     throw new Error("Invalid request");
   }
 
-  const data = await getRequestWrapper<{ items: { track: Track }[] }>(
+  const data = await getRequestWrapper<z.infer<typeof GetRecentlyPlayed>>(
     `/me/player/recently-played?limit=${limit}`,
   );
 
-  return data?.items.map((item) => item.track);
+  return data?.items;
 };

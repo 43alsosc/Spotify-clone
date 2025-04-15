@@ -2,8 +2,9 @@
 
 import { auth } from "@/lib/auth";
 import { getRequestWrapper } from "@/lib/get-request-wrapper";
-import { Category } from "@/types/types";
+import { GetFeaturedPlaylists } from "@/types/types";
 import { headers } from "next/headers";
+import { z } from "zod";
 
 export const getFeaturedPlaylists = async (limit: number = 20) => {
   const session = await auth.api.getSession({
@@ -14,7 +15,7 @@ export const getFeaturedPlaylists = async (limit: number = 20) => {
   }
 
   const data = await getRequestWrapper<{
-    categories: Category;
+    categories: z.infer<typeof GetFeaturedPlaylists>;
   }>(`/browse/categories?locale=no_NB&limit=${limit}`);
 
   return data?.categories.items;

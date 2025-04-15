@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
 import FiltersSection from "./filters-section";
 import MediaItemsList from "./media-items-list";
 import CollapsedSidebar from "./collapsed-sidebar";
 import SidebarHeader from "./sidebar-header";
-import { Playlist } from "@/types/types";
+import { SimplifiedPlaylist } from "@/types/types";
+import { z } from "zod";
 
 interface SidebarContentProps {
   isCollapsed: boolean;
   leftPanelWidth: number;
-  data: Playlist[];
+  data: z.infer<typeof SimplifiedPlaylist>[] | undefined;
   isLoading: boolean;
   isLeftPanelMaximized: boolean;
   expandPanel: () => void;
@@ -71,7 +71,7 @@ export default function SidebarContent({
       {/* Scrollable content section */}
       <div className="flex-1 overflow-y-auto">
         {/* Search and sort controls */}
-        <div className="bg-bg-[#121212] flex items-center justify-between p-4">
+        <div className="flex items-center justify-between bg-[#121212] p-4">
           <div className="flex items-center">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}

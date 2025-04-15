@@ -1,13 +1,14 @@
 "use client";
 
-import { Playlist } from "@/types/types";
+import { SimplifiedPlaylist } from "@/types/types";
 import MediaItem from "../media-item";
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
+import { z } from "zod";
 
 interface CollapsedSidebarProps {
   leftPanelWidth: number;
-  data: Playlist[];
+  data: z.infer<typeof SimplifiedPlaylist>[] | undefined;
   isLoading: boolean;
   toggleCollapsed: () => void;
 }
@@ -49,14 +50,20 @@ export default function CollapsedSidebar({
         {isLoading ? (
           <div className="p-4 text-white">Loading playlists...</div>
         ) : (
-          data.map((item, index) => (
-            <MediaItem
-              key={index}
-              item={item}
-              isCollapsed={true}
-              viewMode="compact"
-            />
-          ))
+          <>
+            {data ? (
+              data.map((item, index) => (
+                <MediaItem
+                  key={index}
+                  item={item}
+                  isCollapsed={true}
+                  viewMode="compact"
+                />
+              ))
+            ) : (
+              <div className="p-4 text-white">No playlists found</div>
+            )}
+          </>
         )}
       </div>
     </div>

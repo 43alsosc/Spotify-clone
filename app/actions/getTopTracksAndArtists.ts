@@ -2,7 +2,6 @@
 
 import { auth } from "@/lib/auth";
 import { getRequestWrapper } from "@/lib/get-request-wrapper";
-import { Artist, Track } from "@/types/types";
 import { headers } from "next/headers";
 
 type Props = {
@@ -11,9 +10,9 @@ type Props = {
   type: "artists" | "tracks";
 };
 
-type ResponseData<T extends "artists" | "tracks"> = {
-  items: T extends "artists" ? Artist[] : Track[];
-};
+// type ResponseData<T extends "artists" | "tracks"> = {
+//   items: T extends "artists" ? Artist[] : Track[];
+// };
 
 export const getTopTracksAndArtists = async ({
   timeRange = "short_term",
@@ -27,9 +26,9 @@ export const getTopTracksAndArtists = async ({
     throw new Error("Invalid request");
   }
 
-  const data = await getRequestWrapper<ResponseData<typeof type>>(
+  const data = await getRequestWrapper(
     `/me/top/${type}?time_range=${timeRange}&limit=${limit}`,
   );
 
-  return data?.items;
+  return data;
 };

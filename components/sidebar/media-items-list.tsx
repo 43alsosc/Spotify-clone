@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils";
 import MediaItem from "../media-item";
-import { Playlist } from "@/types/types";
+import { SimplifiedPlaylist } from "@/types/types";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 
 interface MediaItemsListProps {
   viewMode: "compact" | "grid" | "list";
-  data: Playlist[];
+  data: z.infer<typeof SimplifiedPlaylist>[] | undefined;
   isLoading: boolean;
   leftPanelWidth?: number;
 }
@@ -38,7 +39,7 @@ export default function MediaItemsList({
     return <div className="p-4 text-zinc-400">Loading playlists...</div>;
   }
 
-  if (data.length === 0) {
+  if (data && data.length === 0) {
     return <div className="p-4 text-zinc-400">No playlists found</div>;
   }
 
@@ -57,14 +58,15 @@ export default function MediaItemsList({
           : undefined
       }
     >
-      {data.map((item, index) => (
-        <MediaItem
-          key={index}
-          item={item}
-          viewMode={viewMode}
-          isCollapsed={false}
-        />
-      ))}
+      {data &&
+        data.map((item, index) => (
+          <MediaItem
+            key={index}
+            item={item}
+            viewMode={viewMode}
+            isCollapsed={false}
+          />
+        ))}
     </div>
   );
 }
