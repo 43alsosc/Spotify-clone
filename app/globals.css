@@ -149,3 +149,18 @@
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+/* Fjern scrollbar men behold scrolling */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* For IE og Edge */
+* {
+  -ms-overflow-style: none;
+}

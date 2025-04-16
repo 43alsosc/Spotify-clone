@@ -206,7 +206,7 @@ export default function ResizablePanels({
         </div>
 
         {/* Right Panel - Content */}
-        <div className="flex-1 overflow-auto rounded-[1rem] bg-[#121212] p-6">
+        <div className="flex-1 overflow-auto rounded-[1rem] bg-[#121212]">
           {children}
         </div>
       </div>
