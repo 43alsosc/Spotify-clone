@@ -26,6 +26,8 @@ export default function PlaylistHeader({
     getImage(data.owner.href).then(setOwnerImage);
   }, [data.owner.href]);
 
+  const titleSize = getTitleSize(data.name.length);
+
   return (
     <div
       className="mb-8 flex"
@@ -42,13 +44,17 @@ export default function PlaylistHeader({
         alt={data.name}
         width={400}
         height={400}
-        className="mr-3 size-72 rounded-[0.5rem] p-8"
+        className="size-72 rounded-[0.5rem] p-8"
       />
       <div className="flex flex-col justify-center">
-        <h1 className="mb-2 text-9xl font-extrabold text-white">{data.name}</h1>
+        <h1
+          className={`mb-2 ${titleSize} line-clamp-1 font-extrabold text-white`}
+        >
+          {data.name}
+        </h1>
         <div className="flex items-center">
           <Image
-            src={ownerImage || "Placeholder-48x48.svg"}
+            src={ownerImage ? ownerImage : "Placeholder-48x48.svg"}
             alt={data.owner.display_name}
             width={30}
             height={30}
@@ -69,4 +75,30 @@ export default function PlaylistHeader({
       </div>
     </div>
   );
+}
+
+function getTitleSize(length: number) {
+  if (length <= 10) {
+    return "text-9xl";
+  } else if (length <= 20) {
+    return "text-7xl";
+  } else if (length <= 30) {
+    return "text-6xl";
+  } else if (length <= 40) {
+    return "text-5xl";
+  } else if (length <= 50) {
+    return "text-4xl";
+  } else if (length <= 60) {
+    return "text-3xl";
+  } else if (length <= 70) {
+    return "text-2xl";
+  } else if (length <= 80) {
+    return "text-xl";
+  } else if (length <= 90) {
+    return "text-lg";
+  } else if (length <= 100) {
+    return "text-base";
+  } else {
+    return "text-sm";
+  }
 }
