@@ -3,26 +3,7 @@ import { PlaylistEpisodeSchema, PlaylistTrackSchema } from "@/types/types";
 import Image from "next/image";
 import { Clock } from "lucide-react";
 import PlaylistHeader from "./playlist-header";
-
-export const formatDuration = (ms: number): string => {
-  const seconds = Math.floor((ms / 1000) % 60);
-  const minutes = Math.floor((ms / (1000 * 60)) % 60);
-  const hours = Math.floor(ms / (1000 * 60 * 60));
-  const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-
-  const paddedSeconds = seconds.toString().padStart(2, "0");
-  const paddedMinutes = minutes.toString().padStart(2, "0");
-  const paddedHours = hours.toString().padStart(2, "0");
-  const paddedDays = days.toString().padStart(2, "0");
-
-  if (days > 0) {
-    return `${paddedDays}:${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
-  } else if (hours > 0) {
-    return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
-  } else {
-    return `${paddedMinutes}:${paddedSeconds}`;
-  }
-};
+import { formatDuration } from "@/utils/format-duration";
 
 export default async function PlaylistPage({
   params,
@@ -41,7 +22,6 @@ export default async function PlaylistPage({
   return (
     <div>
       <PlaylistHeader data={data} />
-
       <div className="px-6">
         <div className="mb-4 grid grid-cols-[50px_2fr_1fr_1fr_100px] items-center gap-4 border-b border-gray-800 pb-2 text-sm text-gray-400">
           <div>#</div>
