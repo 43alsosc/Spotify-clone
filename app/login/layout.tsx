@@ -2,7 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import "../globals.css";
 import localFont from "next/font/local";
-import Providers from "@/providers/query-client-provider";
+import Providers from "@/app/(home)/query-client-provider";
 
 const circularBlack = localFont({
   src: "../fonts/circular-black.ttf",
