@@ -8,10 +8,16 @@ import { getRequestWrapper } from "@/lib/get-request-wrapper";
 import { formatDuration } from "./page";
 import { useState, useEffect } from "react";
 import ColorExtractor from "@/components/color-extractor";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 async function getImage(url: string) {
   const image = await getRequestWrapper<z.infer<typeof UserSchema>>(url);
-  return image?.images[0].url;
+
+  if (!image?.images[0].url) {
+    return undefined;
+  }
+
+  return image.images[0].url;
 }
 
 export default function PlaylistHeader({
@@ -47,19 +53,16 @@ export default function PlaylistHeader({
         className="size-72 rounded-[0.5rem] p-8"
       />
       <div className="flex flex-col justify-center">
-        <h1
-          className={`mb-2 ${titleSize} line-clamp-1 font-extrabold text-white`}
-        >
+        <h1 className={`pb-4 ${titleSize} font-extrabold text-white`}>
           {data.name}
         </h1>
         <div className="flex items-center">
-          <Image
-            src={ownerImage ? ownerImage : "Placeholder-48x48.svg"}
-            alt={data.owner.display_name}
-            width={30}
-            height={30}
-            className="rounded-full"
-          />
+          <Avatar className="size-8">
+            <AvatarImage src={ownerImage} />
+            <AvatarFallback className="rounded-full">
+              {data.owner.display_name.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
           <p className="pl-2 font-bold text-white">{data.owner.display_name}</p>
           <Dot size={20} className="text-gray-400" />
           <p className="text-gray-400">{data.tracks.items.length} låter</p>
