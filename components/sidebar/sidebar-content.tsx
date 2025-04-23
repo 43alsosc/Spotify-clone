@@ -34,7 +34,7 @@ export default function SidebarContent({
 }: SidebarContentProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Recent");
-  const [viewMode, setViewMode] = useState<"compact" | "grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"compact" | "grid" | "list">("list");
 
   if (isCollapsed) {
     return (
