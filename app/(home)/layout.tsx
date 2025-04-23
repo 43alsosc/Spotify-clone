@@ -4,7 +4,7 @@ import "../globals.css";
 import { Header } from "@/components/header";
 import { MusicPlayer } from "@/components/music-player";
 import localFont from "next/font/local";
-import Providers from "@/providers/query-client-provider";
+import Providers from "@/app/(home)/query-client-provider";
 import ResizablePanels from "@/components/resizable-panels";
 
 const circularBlack = localFont({
