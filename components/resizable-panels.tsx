@@ -4,11 +4,8 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import SidebarContent from "./sidebar/sidebar-content";
-import useSWR from "swr";
-import { GetUsersPlaylists } from "@/types/types";
-import { z } from "zod";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { useQuery } from "@tanstack/react-query";
+import { getCurrentUserPlaylist } from "@/app/actions/getCurrentUserPlaylist";
 
 export default function ResizablePanels({
   children,
@@ -143,10 +140,10 @@ export default function ResizablePanels({
     setLeftPanelWidth(MIN_WIDTH);
   }, []);
 
-  const { data, error, isLoading } = useSWR<z.infer<typeof GetUsersPlaylists>>(
-    "/api/user-playlists",
-    fetcher,
-  );
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["user-playlists"],
+    queryFn: () => getCurrentUserPlaylist(),
+  });
 
   const userPlaylistsData = data?.items;
 
@@ -160,7 +157,7 @@ export default function ResizablePanels({
     return (
       <div
         ref={containerRef}
-        className="flex h-[calc(100vh-8rem)] w-full overflow-hidden"
+        className="flex h-[calc(100vh-9.5rem)] w-full overflow-hidden"
       >
         {/* Left Panel */}
         <SidebarContent
