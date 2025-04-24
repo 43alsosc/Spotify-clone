@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { SimplifiedPlaylist } from "@/types/types";
 import Link from "next/link";
 import { z } from "zod";
+import { useParams } from "next/navigation";
 
 interface MediaItemProps {
   item: z.infer<typeof SimplifiedPlaylist>;
@@ -16,9 +17,13 @@ export default function MediaItem({
   viewMode,
   isCollapsed = false,
 }: MediaItemProps) {
+  const params = useParams();
+  const id = params.id as string;
+
+  // Collapsed view - only image
   if (isCollapsed) {
     return (
-      <div className="group relative aspect-square size-16 cursor-pointer overflow-hidden rounded-[0.5rem] bg-[#121212] p-2 transition-all hover:bg-[#2F2F2F]">
+      <div className="group relative aspect-square size-16 cursor-pointer overflow-hidden rounded-[0.5rem] bg-[#121212] p-2 transition-all hover:bg-[#2F2F2F] active:bg-black">
         <div className="relative h-full w-full overflow-hidden rounded-[0.5rem]">
           <Link href={`/playlist/${item.id}`}>
             <Image
@@ -41,7 +46,7 @@ export default function MediaItem({
   // Compact view - only title and type
   if (viewMode === "compact") {
     return (
-      <div className="group cursor-pointer rounded-[0.5rem] px-2 py-1 hover:bg-zinc-700/50">
+      <div className="group cursor-pointer rounded-[0.5rem] px-2 py-1 hover:bg-zinc-700/50 active:bg-black">
         <Link href={`/playlist/${item.id}`} className="flex items-center gap-2">
           <h3 className="truncate font-medium text-white">{item.name}</h3>
           <span className="text-xs text-zinc-400">Playlist</span>
@@ -50,12 +55,16 @@ export default function MediaItem({
     );
   }
 
+  // Grid view - title, type, owner, number of tracks
   return (
     <div
       className={cn(
-        "group cursor-pointer rounded-[1rem] p-2 transition-colors hover:bg-zinc-700/50",
+        "group cursor-pointer rounded-[0.3rem] p-2 transition-colors hover:bg-[#1F1F1F] active:bg-black",
         viewMode === "list" &&
-          "line-clamp-1 flex w-full min-w-0 items-center gap-3",
+          "mx-auto line-clamp-1 flex w-[95%] min-w-0 items-center gap-3",
+        viewMode === "list" &&
+          item.href === `https://api.spotify.com/v1/playlists/${id}` &&
+          "bg-[#2A2A2A] hover:bg-[#3A3A3A]",
         viewMode === "grid" && "flex-col items-start",
       )}
     >
