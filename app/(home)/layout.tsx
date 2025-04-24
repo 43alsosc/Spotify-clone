@@ -30,7 +30,7 @@ export default function RootLayout({
         >
           <div className="flex h-screen flex-col">
             <Header />
-            <main className="flex-1 overflow-hidden bg-black p-4">
+            <main className="flex-1 overflow-hidden bg-black px-4">
               <ResizablePanels>{children}</ResizablePanels>
             </main>
             <MusicPlayer />

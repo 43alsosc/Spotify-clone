@@ -157,7 +157,7 @@ export default function ResizablePanels({
     return (
       <div
         ref={containerRef}
-        className="flex h-[calc(100vh-9.5rem)] w-full overflow-hidden"
+        className="flex h-[calc(100vh-8.5rem)] w-full overflow-hidden"
       >
         {/* Left Panel */}
         <SidebarContent
