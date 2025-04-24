@@ -3,52 +3,48 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+type ScrollDirection = "left" | "right";
+
+const filters = [
+  "Alle",
+  "Spillelister",
+  "Album",
+  "Artister",
+  "Sanger",
+  "Podkaster",
+  "Lydbøker",
+  "Nedlastet",
+  "Lokale filer",
+  "Favoritter",
+  "Nylig spilt",
+] as const;
+
 export default function FiltersSection() {
   const filtersRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Sample data
-  const filters = [
-    "All",
-    "Playlists",
-    "Albums",
-    "Artists",
-    "Songs",
-    "Podcasts",
-    "Audiobooks",
-    "Downloaded",
-    "Local Files",
-    "Favorites",
-    "Recently Played",
-  ];
+  const checkScroll = () => {
+    if (!filtersRef.current) return;
 
-  // Check if filters can be scrolled and update fade effect
+    const { scrollLeft, scrollWidth, clientWidth } = filtersRef.current;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+
+    const element = filtersRef.current;
+    if (scrollLeft <= 0) {
+      element.style.maskImage =
+        "linear-gradient(to right, black 90%, transparent)";
+    } else if (scrollLeft >= scrollWidth - clientWidth - 10) {
+      element.style.maskImage =
+        "linear-gradient(to right, transparent, black 10%)";
+    } else {
+      element.style.maskImage =
+        "linear-gradient(to right, transparent, black 10%, black 90%, transparent)";
+    }
+  };
+
   useEffect(() => {
-    const checkScroll = () => {
-      if (filtersRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = filtersRef.current;
-        setCanScrollLeft(scrollLeft > 0);
-        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-
-        // Update the mask image based on scroll position
-        const element = filtersRef.current;
-        if (scrollLeft <= 0) {
-          // At the start - only fade right
-          element.style.maskImage =
-            "linear-gradient(to right, black 90%, transparent)";
-        } else if (scrollLeft >= scrollWidth - clientWidth - 10) {
-          // At the end - only fade left
-          element.style.maskImage =
-            "linear-gradient(to right, transparent, black 10%)";
-        } else {
-          // In the middle - fade both sides
-          element.style.maskImage =
-            "linear-gradient(to right, transparent, black 10%, black 90%, transparent)";
-        }
-      }
-    };
-
     checkScroll();
 
     const filtersElement = filtersRef.current;
@@ -65,19 +61,19 @@ export default function FiltersSection() {
     };
   }, []);
 
-  // Scroll filters
-  const scrollFilters = (direction: "left" | "right") => {
-    if (filtersRef.current) {
-      const scrollAmount = 200;
-      const currentScroll = filtersRef.current.scrollLeft;
-      filtersRef.current.scrollTo({
-        left:
-          direction === "left"
-            ? currentScroll - scrollAmount
-            : currentScroll + scrollAmount,
-        behavior: "smooth",
-      });
-    }
+  const scrollFilters = (direction: ScrollDirection) => {
+    if (!filtersRef.current) return;
+
+    const scrollAmount = 200;
+    const currentScroll = filtersRef.current.scrollLeft;
+
+    filtersRef.current.scrollTo({
+      left:
+        direction === "left"
+          ? currentScroll - scrollAmount
+          : currentScroll + scrollAmount,
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -86,7 +82,7 @@ export default function FiltersSection() {
         <button
           onClick={() => scrollFilters("left")}
           className="absolute top-1/2 left-0 z-10 -translate-y-1/2 rounded-full bg-zinc-800/90 p-1 shadow-md"
-          aria-label="Scroll filters left"
+          aria-label="Rull filtre til venstre"
         >
           <ChevronLeft className="h-4 w-4 text-white" />
         </button>
@@ -110,7 +106,7 @@ export default function FiltersSection() {
         <button
           onClick={() => scrollFilters("right")}
           className="absolute top-1/2 right-0 z-10 -translate-y-1/2 rounded-full bg-zinc-800/90 p-1 shadow-md"
-          aria-label="Scroll filters right"
+          aria-label="Rull filtre til høyre"
         >
           <ChevronRight className="h-4 w-4 text-white" />
         </button>

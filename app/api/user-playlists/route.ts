@@ -1,8 +1,25 @@
-import { getCurrentUserPlaylist } from "@/app/actions/getCurrentUserPlaylist";
 import { NextResponse } from "next/server";
+import { getCurrentUserPlaylist } from "@/app/actions/getCurrentUserPlaylist";
+import { GetUsersPlaylistsSchema } from "@/lib/validations/playlist";
 
 export async function GET() {
-  const response = await getCurrentUserPlaylist();
+  try {
+    const response = await getCurrentUserPlaylist();
 
-  return NextResponse.json(response);
+    if (!response) {
+      return NextResponse.json(
+        { error: "Ingen spillelister funnet" },
+        { status: 404 },
+      );
+    }
+
+    const validatedResponse = GetUsersPlaylistsSchema.parse(response);
+    return NextResponse.json(validatedResponse);
+  } catch (error) {
+    console.error("Feil ved henting av spillelister:", error);
+    return NextResponse.json(
+      { error: "Kunne ikke hente spillelister" },
+      { status: 500 },
+    );
+  }
 }

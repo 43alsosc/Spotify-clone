@@ -1,19 +1,25 @@
 "use server";
 
+import { z } from "zod";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getRequestWrapper } from "@/lib/get-request-wrapper";
-import { headers } from "next/headers";
-import { z } from "zod";
 import {
-  GetPlaylistPageSchema,
-  GetPlaylistTracksSchema,
   playlistDetailsSchema,
-} from "@/types/types";
+  GetPlaylistTracksSchema,
+  GetPlaylistPageSchema,
+} from "@/lib/validations/playlist";
+
+type GetPlaylistParams = {
+  id: string;
+  offset: number;
+  limit: number;
+};
 
 export const getPlaylistDetails = async (id: string) => {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) {
-    throw new Error("Invalid request");
+    throw new Error("Ugyldig forespørsel");
   }
 
   const data = await getRequestWrapper<z.infer<typeof playlistDetailsSchema>>(
@@ -27,14 +33,10 @@ export const getPlaylistDetails = async (id: string) => {
   return data;
 };
 
-export const getPlaylist = async (
-  id: string,
-  offset: number,
-  limit: number,
-) => {
+export const getPlaylist = async ({ id, offset, limit }: GetPlaylistParams) => {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) {
-    throw new Error("Invalid request");
+    throw new Error("Ugyldig forespørsel");
   }
 
   const data = await getRequestWrapper<z.infer<typeof GetPlaylistTracksSchema>>(
@@ -51,7 +53,7 @@ export const getPlaylist = async (
 export const getFullPlaylist = async (id: string) => {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) {
-    throw new Error("Invalid request");
+    throw new Error("Ugyldig forespørsel");
   }
 
   const data = await getRequestWrapper<z.infer<typeof GetPlaylistTracksSchema>>(

@@ -2,23 +2,22 @@
 
 import Image from "next/image";
 import { Clock } from "lucide-react";
-import { formatDuration } from "@/utils/format-duration";
+import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
+import { formatDuration } from "@/lib/utils/format-duration";
 import {
   PlaylistTrackSchema,
   PlaylistEpisodeSchema,
   GetPlaylistTracksSchema,
-} from "@/types/types";
-import { z } from "zod";
+} from "@/lib/validations/playlist";
 import { getFullPlaylist } from "@/app/actions/getPlaylist";
-import { useQuery } from "@tanstack/react-query";
 
-export function PlaylistTracks({
-  data,
-  playlistId,
-}: {
+type PlaylistTracksProps = {
   data: z.infer<typeof GetPlaylistTracksSchema>;
   playlistId: string;
-}) {
+};
+
+export function PlaylistTracks({ data, playlistId }: PlaylistTracksProps) {
   const {
     data: fullPlaylist,
     isError,
@@ -27,7 +26,7 @@ export function PlaylistTracks({
     queryKey: ["playlist-tracks", playlistId],
     queryFn: async () => {
       const result = await getFullPlaylist(playlistId);
-      if (!result) throw new Error("Failed to fetch playlist");
+      if (!result) throw new Error("Kunne ikke hente spilleliste");
 
       return result;
     },
@@ -36,11 +35,11 @@ export function PlaylistTracks({
 
   if (isError) {
     console.error(error);
-    return <div>Error fetching playlist</div>;
+    return <div>Feil ved henting av spilleliste</div>;
   }
 
   if (!fullPlaylist) {
-    return <div>Error fetching playlist</div>;
+    return <div>Feil ved henting av spilleliste</div>;
   }
 
   return (
@@ -62,7 +61,7 @@ export function PlaylistTracks({
 
             if (!parsedTrack.success) {
               console.error(parsedTrack.error);
-              return <div key={i}>Error parsing track</div>;
+              return <div key={i}>Feil ved parsing av spor</div>;
             }
 
             const trackData = parsedTrack.data;
@@ -105,7 +104,7 @@ export function PlaylistTracks({
 
             if (!parsedEpisode.success) {
               console.error(parsedEpisode.error);
-              return <div key={i}>Error parsing episode</div>;
+              return <div key={i}>Feil ved parsing av episode</div>;
             }
 
             const episodeData = parsedEpisode.data;

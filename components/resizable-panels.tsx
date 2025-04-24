@@ -2,105 +2,90 @@
 
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
-import SidebarContent from "./sidebar/sidebar-content";
 import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils/cn";
+import SidebarContent from "@/components/sidebar/sidebar-content";
 import { getCurrentUserPlaylist } from "@/app/actions/getCurrentUserPlaylist";
+import { getFollowedArtists } from "@/app/actions/getFollowedArtists";
 
-export default function ResizablePanels({
-  children,
-}: {
+const PANEL_WIDTHS = {
+  MIN: 15,
+  MAX: 40,
+  COLLAPSED: 5,
+  COLLAPSE_THRESHOLD: 15,
+  COLLAPSE_DRAG_DISTANCE: 5,
+} as const;
+
+interface ResizablePanelsProps {
   children: React.ReactNode;
-}) {
+}
+
+export default function ResizablePanels({ children }: ResizablePanelsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [leftPanelWidth, setLeftPanelWidth] = useState(25); // percentage
+  const [leftPanelWidth, setLeftPanelWidth] = useState(25);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isLeftPanelMaximized, setIsLeftPanelMaximized] = useState(false);
 
-  // Panel width constants
-  const MIN_WIDTH = 15;
-  const MAX_WIDTH = 40;
-  const COLLAPSED_WIDTH = 5;
-
-  // Collapse behavior constants
-  const COLLAPSE_THRESHOLD = MIN_WIDTH; // Start tracking collapse progress at minimum width
-  const COLLAPSE_DRAG_DISTANCE = 5; // How much additional dragging needed to trigger collapse (percentage)
-
-  // Handle the start of dragging
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
   }, []);
 
-  // Handle the dragging motion
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       if (!isDragging || !containerRef.current) return;
 
-      // Get the container element and its bounding client rectangle
       const container = containerRef.current;
       const containerRect = container.getBoundingClientRect();
-      const containerWidth = containerRect.width;
-
-      // Calculate the new width as a percentage
       const newLeftPanelWidth =
-        ((e.clientX - containerRect.left) / containerWidth) * 100;
+        ((e.clientX - containerRect.left) / containerRect.width) * 100;
 
-      // Update isLeftPanelMaximized based on the new width
-      if (newLeftPanelWidth >= MAX_WIDTH) {
-        setIsLeftPanelMaximized(true);
-      } else {
-        setIsLeftPanelMaximized(false);
-      }
+      setIsLeftPanelMaximized(newLeftPanelWidth >= PANEL_WIDTHS.MAX);
 
-      if (isCollapsed && newLeftPanelWidth > COLLAPSE_THRESHOLD) {
+      if (isCollapsed && newLeftPanelWidth > PANEL_WIDTHS.COLLAPSE_THRESHOLD) {
         setIsCollapsed(false);
-        setLeftPanelWidth(MIN_WIDTH);
+        setLeftPanelWidth(PANEL_WIDTHS.MIN);
         return;
       }
 
-      // If we're not collapsed and dragging below minimum width
-      if (!isCollapsed && newLeftPanelWidth < COLLAPSE_THRESHOLD) {
-        // Keep the panel at minimum width but track how much further the user is dragging
-        setLeftPanelWidth(MIN_WIDTH);
+      if (!isCollapsed && newLeftPanelWidth < PANEL_WIDTHS.COLLAPSE_THRESHOLD) {
+        setLeftPanelWidth(PANEL_WIDTHS.MIN);
 
-        // Calculate drag progress towards collapse (0 to 1)
-        const dragDistance = COLLAPSE_THRESHOLD - newLeftPanelWidth;
-        const progress = Math.min(dragDistance / COLLAPSE_DRAG_DISTANCE, 1);
+        const dragDistance =
+          PANEL_WIDTHS.COLLAPSE_THRESHOLD - newLeftPanelWidth;
+        const progress = Math.min(
+          dragDistance / PANEL_WIDTHS.COLLAPSE_DRAG_DISTANCE,
+          1,
+        );
 
-        // If we've dragged far enough, collapse the panel
         if (progress >= 1) {
           setIsCollapsed(true);
-          setLeftPanelWidth(COLLAPSED_WIDTH);
+          setLeftPanelWidth(PANEL_WIDTHS.COLLAPSED);
         }
-
         return;
       }
 
-      // Normal dragging behavior within constraints
       if (!isCollapsed) {
         const constrainedWidth = Math.min(
-          Math.max(newLeftPanelWidth, MIN_WIDTH),
-          MAX_WIDTH,
+          Math.max(newLeftPanelWidth, PANEL_WIDTHS.MIN),
+          PANEL_WIDTHS.MAX,
         );
         setLeftPanelWidth(constrainedWidth);
       }
     },
-    [isDragging, isCollapsed, COLLAPSE_THRESHOLD],
+    [isDragging, isCollapsed],
   );
 
-  // Handle the end of dragging
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
   }, []);
 
-  // Add and remove event listeners
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-    }
+    if (!isDragging) return;
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
@@ -108,105 +93,126 @@ export default function ResizablePanels({
     };
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
-  // Expand panel to maximum
   const expandPanel = useCallback(() => {
     setIsCollapsed(false);
-    setLeftPanelWidth(MAX_WIDTH);
+    setLeftPanelWidth(PANEL_WIDTHS.MAX);
     setIsLeftPanelMaximized(true);
   }, []);
 
-  // Collapse panel to minimum
   const collapsePanel = useCallback(() => {
     setIsCollapsed(true);
-    setLeftPanelWidth(COLLAPSED_WIDTH);
+    setLeftPanelWidth(PANEL_WIDTHS.COLLAPSED);
     setIsLeftPanelMaximized(false);
   }, []);
 
-  // Toggle collapsed state
+  const minimizePanel = useCallback(() => {
+    setIsLeftPanelMaximized(false);
+    setLeftPanelWidth(PANEL_WIDTHS.MIN);
+  }, []);
+
   const toggleCollapsed = useCallback(() => {
     if (isCollapsed) {
       setIsCollapsed(false);
-      setLeftPanelWidth(MIN_WIDTH);
+      setLeftPanelWidth(PANEL_WIDTHS.MIN);
       setIsLeftPanelMaximized(false);
     } else {
       setIsCollapsed(true);
-      setLeftPanelWidth(COLLAPSED_WIDTH);
+      setLeftPanelWidth(PANEL_WIDTHS.COLLAPSED);
       setIsLeftPanelMaximized(false);
     }
   }, [isCollapsed]);
 
-  const minimizePanel = useCallback(() => {
-    setIsLeftPanelMaximized(false);
-    setLeftPanelWidth(MIN_WIDTH);
-  }, []);
-
-  const { data, error, isLoading } = useQuery({
+  const {
+    data: playlistsData,
+    error: playlistsError,
+    isLoading: playlistsLoading,
+  } = useQuery({
     queryKey: ["user-playlists"],
     queryFn: () => getCurrentUserPlaylist(),
   });
 
-  const userPlaylistsData = data?.items;
+  const {
+    data: followedArtistsData,
+    error: followedArtistsError,
+    isLoading: followedArtistsLoading,
+  } = useQuery({
+    queryKey: ["followed-artists"],
+    queryFn: () => getFollowedArtists(),
+  });
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
-
-  if (!data && isLoading === false) {
-    return <div>No user playlists found</div>;
-  } else if (data && isLoading === false) {
+  if (playlistsError || followedArtistsError) {
     return (
-      <div
-        ref={containerRef}
-        className="flex h-[calc(100vh-8.5rem)] w-full overflow-hidden"
-      >
-        {/* Left Panel */}
-        <SidebarContent
-          isCollapsed={isCollapsed}
-          leftPanelWidth={leftPanelWidth}
-          data={userPlaylistsData}
-          isLoading={isLoading}
-          isLeftPanelMaximized={isLeftPanelMaximized}
-          expandPanel={expandPanel}
-          collapsePanel={collapsePanel}
-          minimizePanel={minimizePanel}
-          toggleCollapsed={toggleCollapsed}
-        />
-
-        {/* Resizer */}
-        <div
-          className={cn(
-            "flex w-2 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-zinc-600",
-            isDragging && "bg-zinc-600",
-          )}
-          onMouseDown={handleMouseDown}
-          role="separator"
-          aria-orientation="vertical"
-          aria-valuenow={leftPanelWidth}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "ArrowLeft") {
-              if (isCollapsed) {
-                toggleCollapsed();
-              } else if (leftPanelWidth > MIN_WIDTH) {
-                setLeftPanelWidth((prev) => Math.max(prev - 1, MIN_WIDTH));
-              }
-            } else if (e.key === "ArrowRight") {
-              if (isCollapsed) {
-                toggleCollapsed();
-              } else {
-                setLeftPanelWidth((prev) => Math.min(prev + 1, MAX_WIDTH));
-              }
-            }
-          }}
-        >
-          <div className={cn("h-8 w-0.5 rounded-full")}></div>
-        </div>
-
-        {/* Right Panel - Content */}
-        <div className="flex-1 overflow-auto rounded-[1rem] bg-[#121212]">
-          {children}
-        </div>
+      <div className="p-4 text-red-500">
+        Feil ved lasting av data:{" "}
+        {(playlistsError || followedArtistsError)?.message}
       </div>
     );
   }
+
+  if (!followedArtistsData && !followedArtistsLoading) {
+    return (
+      <div className="p-4 text-zinc-400">Ingen fulgte artister funnet</div>
+    );
+  }
+
+  if (!playlistsData?.items && !playlistsLoading) {
+    return <div className="p-4 text-zinc-400">Ingen spillelister funnet</div>;
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowLeft") {
+      if (isCollapsed) {
+        toggleCollapsed();
+      } else if (leftPanelWidth > PANEL_WIDTHS.MIN) {
+        setLeftPanelWidth((prev) => Math.max(prev - 1, PANEL_WIDTHS.MIN));
+      }
+    } else if (e.key === "ArrowRight") {
+      if (isCollapsed) {
+        toggleCollapsed();
+      } else {
+        setLeftPanelWidth((prev) => Math.min(prev + 1, PANEL_WIDTHS.MAX));
+      }
+    }
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex h-[calc(100vh-8.5rem)] w-full overflow-hidden"
+    >
+      <SidebarContent
+        isCollapsed={isCollapsed}
+        leftPanelWidth={leftPanelWidth}
+        playlistData={playlistsData?.items}
+        artistData={followedArtistsData?.artists.items}
+        isLoading={playlistsLoading}
+        followedArtistsLoading={followedArtistsLoading}
+        isLeftPanelMaximized={isLeftPanelMaximized}
+        expandPanel={expandPanel}
+        collapsePanel={collapsePanel}
+        minimizePanel={minimizePanel}
+        toggleCollapsed={toggleCollapsed}
+      />
+
+      <div
+        className={cn(
+          "flex w-2 cursor-col-resize items-center justify-center bg-transparent transition-colors hover:bg-zinc-600",
+          isDragging && "bg-zinc-600",
+        )}
+        onMouseDown={handleMouseDown}
+        onKeyDown={handleKeyDown}
+        role="separator"
+        aria-orientation="vertical"
+        aria-valuenow={leftPanelWidth}
+        tabIndex={0}
+        aria-label="Juster panelbredde"
+      >
+        <div className="h-8 w-0.5 rounded-full" />
+      </div>
+
+      <div className="flex-1 overflow-auto rounded-[1rem] bg-[#121212]">
+        {children}
+      </div>
+    </div>
+  );
 }

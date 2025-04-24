@@ -11,7 +11,7 @@ import {
   Volume2,
 } from "lucide-react";
 import Image from "next/image";
-import { formatDuration } from "@/utils/format-duration";
+import { formatDuration } from "@/lib/utils/format-duration";
 import { useEffect, useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import { useQuery } from "@tanstack/react-query";

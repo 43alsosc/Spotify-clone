@@ -8,6 +8,21 @@ interface ColorExtractorProps {
   onColorExtracted: (color: string) => void;
 }
 
+interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
+
+const convertToHex = ({ r, g, b }: RGB): string => {
+  const toHex = (value: number): string => {
+    const hex = value.toString(16);
+    return hex.length === 1 ? `0${hex}` : hex;
+  };
+
+  return `#${[r, g, b].map(toHex).join("")}`;
+};
+
 export default function ColorExtractor({
   imageUrl,
   onColorExtracted,
@@ -18,24 +33,22 @@ export default function ColorExtractor({
     img.src = imageUrl;
 
     img.onload = () => {
-      const colorThief = new ColorThief();
-      const color = colorThief.getColor(img);
-      const hexColor = rgbToHex(color[0], color[1], color[2]);
-      onColorExtracted(hexColor);
+      try {
+        const colorThief = new ColorThief();
+        const [r, g, b] = colorThief.getColor(img);
+        const dominantColor = convertToHex({ r, g, b });
+        onColorExtracted(dominantColor);
+      } catch (error) {
+        console.error("Feil ved henting av dominerende farge:", error);
+        onColorExtracted("#121212"); // Fallback til standard bakgrunnsfarge
+      }
+    };
+
+    img.onerror = () => {
+      console.error("Feil ved lasting av bilde for fargeekstraksjon");
+      onColorExtracted("#121212");
     };
   }, [imageUrl, onColorExtracted]);
 
   return null;
-}
-
-function rgbToHex(r: number, g: number, b: number): string {
-  return (
-    "#" +
-    [r, g, b]
-      .map((x) => {
-        const hex = x.toString(16);
-        return hex.length === 1 ? "0" + hex : hex;
-      })
-      .join("")
-  );
 }

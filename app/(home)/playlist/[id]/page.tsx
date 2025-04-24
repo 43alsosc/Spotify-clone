@@ -1,17 +1,17 @@
 import PlaylistHeader from "./playlist-header";
-import { getPlaylist, getPlaylistDetails } from "@/app/actions/getPlaylist";
 import { PlaylistTracks } from "./playlist-tracks";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Clock } from "lucide-react";
+import { getPlaylist, getPlaylistDetails } from "@/app/actions/getPlaylist";
 
 type Params = Promise<{ id: string }>;
 
 async function PlaylistTracksWrapper({ id }: { id: string }) {
-  const tracks = await getPlaylist(id, 0, 20);
+  const tracks = await getPlaylist({ id, offset: 0, limit: 20 });
 
   if (!tracks) {
-    return <div>Tracks not found</div>;
+    return <div>Sporene ble ikke funnet</div>;
   }
 
   return <PlaylistTracks data={tracks} playlistId={id} />;
@@ -24,7 +24,7 @@ export default async function PlaylistPage(props: { params: Params }) {
   const details = await getPlaylistDetails(id);
 
   if (!details) {
-    return <div>Playlist not found</div>;
+    return <div>Spillelisten ble ikke funnet</div>;
   }
 
   return (

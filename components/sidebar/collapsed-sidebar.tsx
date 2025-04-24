@@ -1,14 +1,14 @@
 "use client";
 
-import { SimplifiedPlaylist } from "@/types/types";
-import MediaItem from "../media-item";
-import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
 import { z } from "zod";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import MediaItem from "@/components/media-item";
+import { SimplifiedPlaylistSchema } from "@/lib/validations/playlist";
 
 interface CollapsedSidebarProps {
   leftPanelWidth: number;
-  data: z.infer<typeof SimplifiedPlaylist>[] | undefined;
+  data: z.infer<typeof SimplifiedPlaylistSchema>[] | undefined;
   isLoading: boolean;
   toggleCollapsed: () => void;
 }
@@ -27,7 +27,7 @@ export default function CollapsedSidebar({
       <button
         onClick={toggleCollapsed}
         className="rounded-full p-2 text-[#B3B3B3] transition-colors hover:bg-transparent hover:text-white"
-        aria-label="Expand panel"
+        aria-label="Utvid panel"
       >
         <svg
           className="fill-current"
@@ -40,7 +40,7 @@ export default function CollapsedSidebar({
       </button>
 
       <Button
-        variant={"default"}
+        variant="default"
         className="size-8 rounded-full bg-[#1F1F1F] text-[#B3B3B3] hover:bg-[#2F2F2F] hover:text-white"
       >
         <Plus className="h-4 w-4 text-current" />
@@ -48,7 +48,7 @@ export default function CollapsedSidebar({
 
       <div className="grid grid-cols-1 overflow-y-auto [scrollbar-width:none]">
         {isLoading ? (
-          <div className="p-4 text-white">Loading playlists...</div>
+          <div className="p-4 text-white">Laster spillelister...</div>
         ) : (
           <>
             {data ? (
@@ -61,7 +61,7 @@ export default function CollapsedSidebar({
                 />
               ))
             ) : (
-              <div className="p-4 text-white">No playlists found</div>
+              <div className="p-4 text-white">Ingen spillelister funnet</div>
             )}
           </>
         )}
