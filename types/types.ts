@@ -264,28 +264,28 @@ export const PlaylistEpisodeSchema = z.object({
   track: EpisodeSchema,
 });
 
-export const GetPlaylistSchema = z.object({
+export const GetPlaylistTracksSchema = z.object({
+  href: z.string(),
+  limit: z.number(),
+  next: z.string().nullable(),
+  offset: z.number(),
+  previous: z.string().nullable(),
+  total: z.number(),
+  items: z.array(z.union([PlaylistTrackSchema, PlaylistEpisodeSchema])),
+});
+
+export const playlistDetailsSchema = z.object({
   collaborative: z.boolean(),
   description: z.string().nullable(),
-  external_urls: externalUrlsSchema,
-  href: z.string(),
   id: z.string(),
   images: z.array(ImageSchema),
   name: z.string(),
   owner: OwnerSchema,
   public: z.boolean(),
-  snapshot_id: z.string(),
-  tracks: z.object({
-    href: z.string(),
-    limit: z.number(),
-    next: z.string().nullable(),
-    offset: z.number(),
-    previous: z.string().nullable(),
-    total: z.number(),
-    items: z.array(z.union([PlaylistTrackSchema, PlaylistEpisodeSchema])),
-  }),
   type: z.string(),
-  uri: z.string(),
+  tracks: z.object({
+    total: z.number(),
+  }),
 });
 
 export const GetPlaylistPageSchema = z.object({

@@ -1,11 +1,11 @@
 "use client";
 
-import { GetPlaylistSchema, UserSchema } from "@/types/types";
+import { playlistDetailsSchema, UserSchema } from "@/types/types";
 import { z } from "zod";
 import Image from "next/image";
 import { Dot } from "lucide-react";
 import { getRequestWrapper } from "@/lib/get-request-wrapper";
-import { formatDuration } from "@/utils/format-duration";
+// import { formatDuration } from "@/utils/format-duration";
 import { getTitleSize } from "@/utils/get-title-size";
 import { useState, useEffect } from "react";
 import ColorExtractor from "@/components/color-extractor";
@@ -24,7 +24,7 @@ async function getImage(url: string) {
 export default function PlaylistHeader({
   data,
 }: {
-  data: z.infer<typeof GetPlaylistSchema>;
+  data: z.infer<typeof playlistDetailsSchema>;
 }) {
   const [dominantColor, setDominantColor] = useState("#121212");
   const [ownerImage, setOwnerImage] = useState<string | undefined>(undefined);
@@ -66,15 +66,15 @@ export default function PlaylistHeader({
           </Avatar>
           <p className="pl-2 font-bold text-white">{data.owner.display_name}</p>
           <Dot size={20} className="text-gray-400" />
-          <p className="text-gray-400">{data.tracks.items.length} låter</p>
+          <p className="text-gray-400">{data.tracks.total} låter</p>
           <Dot size={20} className="text-gray-400" />
-          <p className="text-gray-400">
+          {/* <p className="text-gray-400">
             {formatDuration(
               data.tracks.items.reduce((acc, item) => {
                 return acc + item.track.duration_ms;
               }, 0),
             )}
-          </p>
+          </p> */}
         </div>
       </div>
     </div>
