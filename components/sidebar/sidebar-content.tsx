@@ -1,19 +1,27 @@
 "use client";
 
+import { z } from "zod";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
 import FiltersSection from "./filters-section";
 import MediaItemsList from "./media-items-list";
 import CollapsedSidebar from "./collapsed-sidebar";
 import SidebarHeader from "./sidebar-header";
-import { SimplifiedPlaylist } from "@/types/types";
-import { z } from "zod";
+import { GetFollowedArtistsSchema } from "@/lib/validations/artist";
+import { SimplifiedPlaylistSchema } from "@/lib/validations/playlist";
+
+type ViewMode = "compact" | "grid" | "list";
+type SortOption = "Nylig" | "Nylig lagt til" | "Alfabetisk" | "Oppretter";
 
 interface SidebarContentProps {
   isCollapsed: boolean;
   leftPanelWidth: number;
-  data: z.infer<typeof SimplifiedPlaylist>[] | undefined;
+  playlistData: z.infer<typeof SimplifiedPlaylistSchema>[] | undefined;
+  artistData:
+    | z.infer<typeof GetFollowedArtistsSchema>["artists"]["items"]
+    | undefined;
   isLoading: boolean;
+  followedArtistsLoading: boolean;
   isLeftPanelMaximized: boolean;
   expandPanel: () => void;
   collapsePanel: () => void;
@@ -21,11 +29,21 @@ interface SidebarContentProps {
   toggleCollapsed: () => void;
 }
 
+const sortOptions: SortOption[] = [
+  "Nylig",
+  "Nylig lagt til",
+  "Alfabetisk",
+  "Oppretter",
+];
+const viewModeOptions: ViewMode[] = ["compact", "list", "grid"];
+
 export default function SidebarContent({
   isCollapsed,
   leftPanelWidth,
-  data,
+  playlistData,
+  artistData,
   isLoading,
+  followedArtistsLoading,
   isLeftPanelMaximized,
   expandPanel,
   collapsePanel,
@@ -33,14 +51,14 @@ export default function SidebarContent({
   toggleCollapsed,
 }: SidebarContentProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [sortBy, setSortBy] = useState("Recent");
-  const [viewMode, setViewMode] = useState<"compact" | "grid" | "list">("list");
+  const [sortBy, setSortBy] = useState<SortOption>("Nylig");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   if (isCollapsed) {
     return (
       <CollapsedSidebar
         leftPanelWidth={leftPanelWidth}
-        data={data}
+        data={playlistData}
         isLoading={isLoading}
         toggleCollapsed={toggleCollapsed}
       />
@@ -54,23 +72,17 @@ export default function SidebarContent({
       )}
       style={{ width: `${leftPanelWidth}%` }}
     >
-      {/* Fixed top section */}
       <div className="flex flex-col border-b border-zinc-700 p-4">
-        {/* Header with controls */}
         <SidebarHeader
           isLeftPanelMaximized={isLeftPanelMaximized}
           expandPanel={expandPanel}
           collapsePanel={collapsePanel}
           minimizePanel={minimizePanel}
         />
-
-        {/* Filters with scroll buttons */}
         <FiltersSection />
       </div>
 
-      {/* Scrollable content section */}
       <div className="flex-1 overflow-y-auto">
-        {/* Search and sort controls */}
         <div className="flex items-center justify-between bg-[#121212] p-4">
           <div className="flex items-center">
             <button
@@ -79,7 +91,7 @@ export default function SidebarContent({
                 "rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white",
                 isSearchOpen && "bg-zinc-700 text-white",
               )}
-              aria-label="Search"
+              aria-label="Søk"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -93,8 +105,8 @@ export default function SidebarContent({
                 strokeLinejoin="round"
                 className="h-4 w-4"
               >
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="m21 21-4.3-4.3"></path>
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
               </svg>
             </button>
 
@@ -102,7 +114,7 @@ export default function SidebarContent({
               <div className="animate-in slide-in-from-left ml-2 w-1/2 duration-300">
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Søk..."
                   className="w-full rounded-md bg-zinc-700 px-3 py-1.5 text-sm text-white focus:ring-1 focus:ring-zinc-500 focus:outline-none"
                   autoFocus
                 />
@@ -112,7 +124,7 @@ export default function SidebarContent({
 
           <div className="group relative">
             <button className="flex items-center gap-1 text-sm text-zinc-300 hover:text-white">
-              <span>Sort: {sortBy}</span>
+              <span>Sorter: {sortBy}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -125,43 +137,42 @@ export default function SidebarContent({
                 strokeLinejoin="round"
                 className="h-3 w-3"
               >
-                <path d="m6 9 6 6 6-6"></path>
+                <path d="m6 9 6 6 6-6" />
               </svg>
             </button>
 
             <div className="invisible absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-md bg-zinc-700 opacity-0 shadow-lg transition-all duration-200 group-hover:visible group-hover:opacity-100">
               <div className="py-1">
-                {["Recent", "Newly added", "Alphabetical", "Creator"].map(
-                  (option) => (
-                    <button
-                      key={option}
-                      className={cn(
-                        "block w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-600 hover:text-white",
-                        sortBy === option && "bg-zinc-600 text-white",
-                      )}
-                      onClick={() => setSortBy(option)}
-                    >
-                      {option}
-                    </button>
-                  ),
-                )}
+                {sortOptions.map((option) => (
+                  <button
+                    key={option}
+                    className={cn(
+                      "block w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-600 hover:text-white",
+                      sortBy === option && "bg-zinc-600 text-white",
+                    )}
+                    onClick={() => setSortBy(option)}
+                  >
+                    {option}
+                  </button>
+                ))}
 
-                <div className="my-1 border-t border-zinc-600"></div>
+                <div className="my-1 border-t border-zinc-600" />
+                <div className="px-4 py-2 text-sm text-zinc-400">Vis som:</div>
 
-                <div className="px-4 py-2 text-sm text-zinc-400">Show as:</div>
-
-                {["compact", "list", "grid"].map((option) => (
+                {viewModeOptions.map((option) => (
                   <button
                     key={option}
                     className={cn(
                       "block w-full px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-600 hover:text-white",
                       viewMode === option && "bg-zinc-600 text-white",
                     )}
-                    onClick={() =>
-                      setViewMode(option as "compact" | "grid" | "list")
-                    }
+                    onClick={() => setViewMode(option)}
                   >
-                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                    {option === "compact"
+                      ? "Kompakt"
+                      : option === "list"
+                        ? "Liste"
+                        : "Rutenett"}
                   </button>
                 ))}
               </div>
@@ -169,12 +180,14 @@ export default function SidebarContent({
           </div>
         </div>
 
-        {/* Media items list */}
         <MediaItemsList
           viewMode={viewMode}
-          data={data}
-          isLoading={isLoading}
+          playlistData={playlistData}
+          artistData={artistData}
+          isPlaylistLoading={isLoading}
+          isArtistLoading={followedArtistsLoading}
           leftPanelWidth={leftPanelWidth}
+          sortBy={sortBy}
         />
       </div>
     </div>

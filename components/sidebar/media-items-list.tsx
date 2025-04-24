@@ -1,47 +1,111 @@
-import { cn } from "@/lib/utils";
-import MediaItem from "../media-item";
-import { SimplifiedPlaylist } from "@/types/types";
-import { useEffect, useState } from "react";
 import { z } from "zod";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils/cn";
+import MediaItem from "@/components/media-item";
+import { SimplifiedPlaylistSchema } from "@/lib/validations/playlist";
+import { ArtistSchema } from "@/lib/validations/artist";
+
+type ViewMode = "compact" | "grid" | "list";
+type SortOption = "Nylig" | "Nylig lagt til" | "Alfabetisk" | "Oppretter";
 
 interface MediaItemsListProps {
-  viewMode: "compact" | "grid" | "list";
-  data: z.infer<typeof SimplifiedPlaylist>[] | undefined;
-  isLoading: boolean;
+  viewMode: ViewMode;
+  playlistData: z.infer<typeof SimplifiedPlaylistSchema>[] | undefined;
+  artistData: z.infer<typeof ArtistSchema>[] | undefined;
+  isPlaylistLoading: boolean;
+  isArtistLoading: boolean;
   leftPanelWidth?: number;
+  sortBy: SortOption;
 }
+
+type MediaItem =
+  | z.infer<typeof SimplifiedPlaylistSchema>
+  | z.infer<typeof ArtistSchema>;
 
 export default function MediaItemsList({
   viewMode,
-  data,
-  isLoading,
+  playlistData,
+  artistData,
+  isPlaylistLoading,
+  isArtistLoading,
   leftPanelWidth = 25,
+  sortBy,
 }: MediaItemsListProps) {
-  // Dynamisk justering av grid-kolonner basert på panelbredde
   const [gridColumns, setGridColumns] = useState(2);
 
   useEffect(() => {
-    if (viewMode === "grid") {
-      // Bestem antall kolonner basert på panelbredde
-      if (leftPanelWidth < 20) {
-        setGridColumns(2);
-      } else if (leftPanelWidth < 30) {
-        setGridColumns(3);
-      } else if (leftPanelWidth < 40) {
-        setGridColumns(4);
-      } else {
-        setGridColumns(5);
-      }
+    if (viewMode !== "grid") return;
+
+    if (leftPanelWidth < 20) {
+      setGridColumns(2);
+    } else if (leftPanelWidth < 30) {
+      setGridColumns(3);
+    } else if (leftPanelWidth < 40) {
+      setGridColumns(4);
+    } else {
+      setGridColumns(5);
     }
   }, [leftPanelWidth, viewMode]);
 
-  if (isLoading) {
-    return <div className="p-4 text-zinc-400">Loading playlists...</div>;
+  if (isPlaylistLoading || isArtistLoading) {
+    return <div className="p-4 text-zinc-400">Laster spillelister...</div>;
   }
 
-  if (data && data.length === 0) {
-    return <div className="p-4 text-zinc-400">No playlists found</div>;
+  if (!playlistData || playlistData.length === 0) {
+    return <div className="p-4 text-zinc-400">Ingen spillelister funnet</div>;
   }
+
+  const allItems: MediaItem[] = [
+    ...(playlistData || []),
+    ...(artistData || []),
+  ];
+
+  const sortedItems = (() => {
+    switch (sortBy) {
+      // Sort by name
+      case "Alfabetisk":
+        return allItems.sort((a, b) => a.name.localeCompare(b.name));
+      // Sort by snapshot_id in the meanwhile newly added is developed
+      case "Nylig lagt til":
+        return allItems.sort((a, b) => {
+          if (a.type === "artist" && b.type === "artist") return 0;
+          if (a.type === "artist") return 1;
+          if (b.type === "artist") return -1;
+          return (
+            b as z.infer<typeof SimplifiedPlaylistSchema>
+          ).snapshot_id.localeCompare(
+            (a as z.infer<typeof SimplifiedPlaylistSchema>).snapshot_id,
+          );
+        });
+      // Sort by owner alphabetically
+      case "Oppretter":
+        return allItems.sort((a, b) => {
+          if (a.type === "artist" && b.type === "artist") {
+            return a.name.localeCompare(b.name);
+          }
+          if (a.type === "artist") {
+            return a.name.localeCompare(
+              (b as z.infer<typeof SimplifiedPlaylistSchema>).owner
+                .display_name,
+            );
+          }
+          if (b.type === "artist") {
+            return (
+              a as z.infer<typeof SimplifiedPlaylistSchema>
+            ).owner.display_name.localeCompare(b.name);
+          }
+          return (
+            a as z.infer<typeof SimplifiedPlaylistSchema>
+          ).owner.display_name.localeCompare(
+            (b as z.infer<typeof SimplifiedPlaylistSchema>).owner.display_name,
+          );
+        });
+      // Default sort in the meanwhile recently is developed
+      case "Nylig":
+      default:
+        return allItems;
+    }
+  })();
 
   return (
     <div
@@ -52,21 +116,19 @@ export default function MediaItemsList({
       style={
         viewMode === "grid"
           ? {
-              // Use CSS grid-template-columns for better responsiveness
               gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
             }
           : undefined
       }
     >
-      {data &&
-        data.map((item, index) => (
-          <MediaItem
-            key={index}
-            item={item}
-            viewMode={viewMode}
-            isCollapsed={false}
-          />
-        ))}
+      {sortedItems.map((item, index) => (
+        <MediaItem
+          key={`${item.type}-${item.id}-${index}`}
+          item={item}
+          viewMode={viewMode}
+          isCollapsed={false}
+        />
+      ))}
     </div>
   );
 }
