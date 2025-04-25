@@ -30,7 +30,7 @@ export default function PlaylistHeader({ data }: PlaylistHeaderProps) {
   const [ownerImage, setOwnerImage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    getImage(data.owner.href).then(setOwnerImage);
+    getImage(data.owner.href).then(setOwnerImage).catch(console.error);
   }, [data.owner.href]);
 
   const titleSize = getTitleSize(data.name.length);
