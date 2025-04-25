@@ -178,7 +178,7 @@ export default function ResizablePanels({ children }: ResizablePanelsProps) {
   return (
     <div
       ref={containerRef}
-      className="flex h-[calc(100vh-8.5rem)] w-full overflow-hidden"
+      className="flex h-[calc(100vh-9.5rem)] w-full overflow-hidden"
     >
       <SidebarContent
         isCollapsed={isCollapsed}
