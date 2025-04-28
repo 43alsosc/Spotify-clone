@@ -6,6 +6,8 @@ import { MusicPlayer } from "@/components/music-player";
 import localFont from "next/font/local";
 import Providers from "@/app/(home)/query-client-provider";
 import ResizablePanels from "@/components/resizable-panels";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 const circularBlack = localFont({
   src: "../fonts/circular-black.ttf",
@@ -17,11 +19,17 @@ export const metadata: Metadata = {
   description: "A modern Spotify clone built with Next.js and Tailwind CSS",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user.id) {
+    return;
+  }
+
+  // For Premium tier users
   return (
     <html suppressHydrationWarning>
       <Providers>
@@ -33,7 +41,7 @@ export default function RootLayout({
             <main className="flex-1 overflow-hidden bg-black px-4">
               <ResizablePanels>{children}</ResizablePanels>
             </main>
-            <MusicPlayer />
+            <MusicPlayer token={session.user.accessToken!} />
           </div>
         </body>
       </Providers>

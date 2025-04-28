@@ -37,6 +37,7 @@ export const auth = betterAuth({
         "user-read-private",
         "user-library-read",
         "playlist-read-collaborative",
+        "streaming",
       ],
     },
   },
