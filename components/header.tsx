@@ -29,8 +29,6 @@ export function Header() {
     router.push("/login");
   };
 
-  console.log(session);
-
   return (
     <header className="mx-6 flex h-16 items-center justify-between p-2">
       <Image
