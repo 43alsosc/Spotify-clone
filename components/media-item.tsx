@@ -91,19 +91,21 @@ export default function MediaItem({
         )}
       >
         <Link href={linkPath}>
-          <Image
-            src={getImageUrl()}
-            alt={item.name}
-            fill
-            sizes={
-              viewMode === "grid" ? "(max-width: 768px) 50vw, 33vw" : "5vw"
-            }
-            className={cn(
-              "object-cover",
-              isArtist === true && "rounded-full",
-              isArtist === false && "rounded-[0.5rem]",
-            )}
-          />
+          <div className="relative size-full">
+            <Image
+              src={getImageUrl()}
+              alt={item.name}
+              fill
+              sizes={
+                viewMode === "grid" ? "(max-width: 768px) 50vw, 33vw" : "5vw"
+              }
+              className={cn(
+                "object-cover",
+                isArtist === true && "rounded-full",
+                isArtist === false && "rounded-[0.5rem]",
+              )}
+            />
+          </div>
           {viewMode !== "grid" && (
             <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
               <button
