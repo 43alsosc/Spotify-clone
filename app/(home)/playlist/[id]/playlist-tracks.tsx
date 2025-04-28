@@ -11,6 +11,7 @@ import {
   GetPlaylistTracksSchema,
 } from "@/lib/validations/playlist";
 import { getFullPlaylist } from "@/app/actions/getPlaylist";
+import { startPlayback } from "@/app/actions/startPlayback";
 
 type PlaylistTracksProps = {
   data: z.infer<typeof GetPlaylistTracksSchema>;
@@ -32,6 +33,19 @@ export function PlaylistTracks({ data, playlistId }: PlaylistTracksProps) {
     },
     initialData: data,
   });
+
+  const handlePlay = async (index: number) => {
+    try {
+      await startPlayback({
+        context_uri: `spotify:playlist:${playlistId}`,
+        offset: {
+          position: index,
+        },
+      });
+    } catch (error) {
+      console.error("Feil ved start av avspilling:", error);
+    }
+  };
 
   if (isError) {
     console.error(error);
@@ -70,7 +84,8 @@ export function PlaylistTracks({ data, playlistId }: PlaylistTracksProps) {
             return (
               <div
                 key={i}
-                className="group grid grid-cols-[50px_2fr_1fr_1fr_100px] items-center gap-4 rounded-[0.5rem] p-2 hover:bg-gray-800/50"
+                className="group grid cursor-pointer grid-cols-[50px_2fr_1fr_1fr_100px] items-center gap-4 rounded-[0.5rem] p-2 hover:bg-gray-800/50 active:bg-black"
+                onClick={() => handlePlay(i)}
               >
                 <div className="text-gray-400">{i + 1}</div>
                 <div className="flex items-center gap-4">
@@ -113,7 +128,8 @@ export function PlaylistTracks({ data, playlistId }: PlaylistTracksProps) {
             return (
               <div
                 key={i}
-                className="group grid grid-cols-[50px_2fr_1fr_1fr_100px] items-center gap-4 rounded-md p-2 hover:bg-gray-800/50"
+                className="group grid cursor-pointer grid-cols-[50px_2fr_1fr_1fr_100px] items-center gap-4 rounded-md p-2 hover:bg-gray-800/50"
+                onClick={() => handlePlay(i)}
               >
                 <div className="text-gray-400">{i + 1}</div>
                 <div className="flex items-center gap-4">
